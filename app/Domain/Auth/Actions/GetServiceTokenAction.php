@@ -163,6 +163,7 @@ class GetServiceTokenAction
                     'endpoint' => config('manager.service_scheme') . '://' . $service . '.' . config(
                             'manager.service_domain'
                         ) . '/token',
+
                 ]
             );
 
