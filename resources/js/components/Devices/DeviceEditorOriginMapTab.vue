@@ -212,18 +212,14 @@ export default {
 
         validateType(type, mapping) {
 
-            console.log(mapping);
-
             // Get valid types from the schema
             let validTypes = mapping.schemaMapping.metric.properties.Sparkplug_Type.enum;
 
             if (validTypes.includes(type)) {
                 // If the type is valid, return it
-                console.log(`${mapping.schemaMapping.namePath.join('/')} is retaining its old value of ${type} because it is a valid type. Valid options are:`, validTypes);
                 return type;
             } else {
                 // Set the first valid type as the default
-                console.log(`${mapping.schemaMapping.namePath.join('/')} is trying to import an invalid type (${type}) so will receive a default of ${validTypes[0]}. Valid options are:`, validTypes);
                 return validTypes[0];
             }
         },

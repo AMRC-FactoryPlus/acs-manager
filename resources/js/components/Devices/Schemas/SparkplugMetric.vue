@@ -147,7 +147,6 @@ export default {
 
         localModel: {
             handler(val) {
-                console.log('localModel changed', val?.Address);
                 let newObject = Object.assign({}, val)
                 Object.keys(newObject).forEach(key => {
                     if (newObject[key] === null) {
@@ -211,7 +210,6 @@ export default {
                     // If the property that we're dealing with is the Sparkplug_Type then we need to ensure that it's a valid type, otherwise set the default
                     if (e === 'Sparkplug_Type') {
                         if (this.isValidType(existing[e], this.selectedMetric.metric.properties[e].enum)) {
-                            console.log(`${this.selectedMetric.namePath.join('/')} is retaining its old value of ${existing[e]} because it is a valid type. Valid options are:`, this.selectedMetric.metric.properties[e].enum);
                             this.$set(this.localModel, e, existing[e])
                         } else {
                             if ('default' in this.selectedMetric.metric.properties[e]) {
