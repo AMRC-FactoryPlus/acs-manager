@@ -19,6 +19,8 @@
 /vendor
 /.idea/*
 /.vagrant
+*.swp
+config.mk
 Homestead.json
 Homestead.yaml
 npm-debug.log
