@@ -17,13 +17,20 @@ RUN mkdir -p /app/storage/app/purify/HTML
 RUN mkdir -p /app/storage/app/purify/JSON
 RUN chmod -R 775 /app/storage
 WORKDIR /app
-COPY . /app/
-RUN composer install --prefer-dist --no-dev --optimize-autoloader --no-interaction
+COPY composer.json composer.lock /app/
+RUN composer install --prefer-dist --no-dev --no-autoloader --no-interaction
+COPY . /app
+RUN composer dump-autoload --optimize --classmap-authoritative --no-dev
+RUN php artisan route:cache
+RUN php artisan view:cache
+RUN php artisan event:cache
 
 FROM node:current-alpine as build-frontend
 WORKDIR /app
-COPY --from=build-backend /app /app
+COPY package.json yarn.lock /app/
 RUN yarn install --immutable --immutable-cache --check-cache
+COPY vite.config.js /app/vite.config.js
+COPY resources /app/resources
 RUN yarn build
 RUN rm -rf node_modules
 
@@ -44,13 +51,14 @@ RUN apk add --no-cache nginx mysql-client mariadb-connector-c-dev \
     && adduser -D -g 'www' www \
     && chown -R www:www /var/lib/nginx
 
+
 ## Prepare Redis
 RUN mkdir -p /usr/src/php/ext/redis \
     && curl -L https://github.com/phpredis/phpredis/archive/5.3.7.tar.gz | tar xvz -C /usr/src/php/ext/redis --strip 1 \
     && echo 'redis' >> /usr/src/php-available-exts
 
 ## Install PHP extensions
-RUN docker-php-ext-install opcache fileinfo bcmath redis session dom mysqli mbstring pdo pdo_mysql xml
+RUN docker-php-ext-install opcache fileinfo bcmath redis session dom mysqli mbstring pdo pdo_mysql xml pcntl
 
 ADD https://pecl.php.net/get/krb5-1.1.4.tgz ./
 RUN tar -xzf ./krb5-1.1.4.tgz && rm krb5-1.1.4.tgz && cd ./krb5-1.1.4 && phpize && ./configure --with-krb5 && make && make install
@@ -61,18 +69,18 @@ RUN echo extension=krb5.so >> "$PHP_INI_DIR/php.ini"
 ENV APP_ENV=production
 ENV APP_DEBUG=false
 
-# Copy the roadrunner binary from the official image (https://roadrunner.dev/docs/intro-install/2023.x/en#docker)
-COPY --from=roadrunner /usr/bin/rr /app/rr
-
-# Set working directory
-WORKDIR /app
-
 COPY .docker/app/nginx.conf /etc/nginx/nginx.conf
 
 # Copy the application
+COPY --chown=root:root --chmod=644 . /app
+COPY --from=build-backend --chown=root:root --chmod=644 /app /app
 COPY --from=build-frontend --chown=root:root --chmod=644 /app /app
 
-RUN php artisan route:cache && php artisan view:cache && php artisan event:cache
+# Copy the roadrunner binary from the official image (https://roadrunner.dev/docs/intro-install/2023.x/en#docker)
+COPY --from=roadrunner --chown=root:root --chmod=755 /usr/bin/rr /app/rr
+
+# Set working directory
+WORKDIR /app
 
 EXPOSE 80
 

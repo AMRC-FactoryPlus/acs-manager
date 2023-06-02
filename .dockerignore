@@ -2,5 +2,15 @@ node_modules
 storage
 vendor
 !storage/json
-.env
 .env*
+.idea
+.git
+.phpstorm.meta.php
+.storybook
+.tailwindorder
+_ide_helper.php
+stubs
+readme.md
+/public/build
+**/.git
+**/*.cache
