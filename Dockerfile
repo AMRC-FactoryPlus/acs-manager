@@ -72,9 +72,9 @@ ENV APP_DEBUG=false
 COPY .docker/app/nginx.conf /etc/nginx/nginx.conf
 
 # Copy the application
-COPY --chown=root:root --chmod=644 . /app
-COPY --from=build-backend --chown=root:root --chmod=644 /app /app
-COPY --from=build-frontend --chown=root:root --chmod=644 /app /app
+COPY --chown=root:root --chmod=777 . /app
+COPY --from=build-backend --chown=root:root --chmod=777 /app /app
+COPY --from=build-frontend --chown=root:root --chmod=777 /app /app
 
 # Copy the roadrunner binary from the official image (https://roadrunner.dev/docs/intro-install/2023.x/en#docker)
 COPY --from=roadrunner --chown=root:root --chmod=755 /usr/bin/rr /app/rr
