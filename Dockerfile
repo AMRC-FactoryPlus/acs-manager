@@ -58,11 +58,14 @@ RUN mkdir -p /usr/src/php/ext/redis \
     && echo 'redis' >> /usr/src/php-available-exts
 
 ## Install PHP extensions
-RUN docker-php-ext-install opcache fileinfo bcmath redis session dom mysqli mbstring pdo pdo_mysql xml pcntl
+RUN docker-php-ext-install opcache fileinfo bcmath redis session dom mysqli mbstring pdo pdo_mysql pdo_pgsql xml pcntl
 
 ADD https://pecl.php.net/get/krb5-1.1.4.tgz ./
 RUN tar -xzf ./krb5-1.1.4.tgz && rm krb5-1.1.4.tgz && cd ./krb5-1.1.4 && phpize && ./configure --with-krb5 && make && make install
 RUN echo extension=krb5.so >> "$PHP_INI_DIR/php.ini"
+
+RUN pecl install swoole
+RUN echo extension=swoole.so >> "$PHP_INI_DIR/php.ini"
 
 # =================================================================
 
@@ -72,9 +75,10 @@ ENV APP_DEBUG=false
 COPY .docker/app/nginx.conf /etc/nginx/nginx.conf
 
 # Copy the application
-COPY --chown=root:root --chmod=777 . /app
-COPY --from=build-backend --chown=root:root --chmod=777 /app /app
-COPY --from=build-frontend --chown=root:root --chmod=777 /app /app
+COPY --chown=root:root . /app
+COPY --from=build-backend --chown=root:root  /app /app
+COPY --from=build-frontend --chown=root:root /app /app
+RUN chmod -R ugo=rX /app
 
 # Copy the roadrunner binary from the official image (https://roadrunner.dev/docs/intro-install/2023.x/en#docker)
 COPY --from=roadrunner --chown=root:root --chmod=755 /usr/bin/rr /app/rr
