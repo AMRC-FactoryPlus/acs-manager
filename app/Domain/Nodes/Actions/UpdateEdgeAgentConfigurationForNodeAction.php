@@ -8,7 +8,9 @@ namespace App\Domain\Nodes\Actions;
 
 use App\Domain\Devices\Models\Device;
 use App\Domain\Nodes\Models\Node;
+use App\Domain\Support\Actions\ConfigDBRequest;
 use App\Domain\Support\Actions\MakeConsumptionFrameworkRequest;
+use App\Domain\Support\UUIDs\CDApp;
 use App\EdgeAgentConfiguration;
 use App\Exceptions\ActionFailException;
 use App\Exceptions\ActionForbiddenException;
@@ -19,8 +21,6 @@ use Opis\JsonSchema\Errors\ValidationError;
 use Opis\JsonSchema\Validator;
 use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
-
-const EdgeAgentConfig = "aac6f843-cfee-4683-b121-6943bfdf9173";
 
 class UpdateEdgeAgentConfigurationForNodeAction
 {
@@ -225,13 +225,7 @@ class UpdateEdgeAgentConfigurationForNodeAction
         }
 
         // Push the config to the ConfigDB
-        (new MakeConsumptionFrameworkRequest)->execute(
-            type: 'put',
-            service: 'configdb',
-            url: sprintf("%s/v1/app/%s/object/%s",
-                config('manager.configdb_service_url'), EdgeAgentConfig, $node->uuid),
-            payload: $config,
-        );
+        (new ConfigDBRequest)->putConfig(CDApp::EdgeAgentConfig, $node->uuid, $config);
 
         if (! in_array(config('app.env'), ['local', 'testing'])) {
             // Ask the edge agent to reload the config
