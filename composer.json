@@ -23,6 +23,8 @@
         "laravel/tinker": "^2.0",
         "laravelcollective/html": "^6.1",
         "league/flysystem-aws-s3-v3": "^3.0",
+        "league/uri": "^6.0",
+        "league/uri-components": "^2.4",
         "meilisearch/meilisearch-php": "^v0.26.0",
         "opis/json-schema": "^2.3",
         "pusher/pusher-php-server": "^5.0",

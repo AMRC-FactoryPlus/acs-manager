@@ -6,11 +6,18 @@
 
 namespace App\Domain\Support\ServiceClient;
 
+use League\Uri\Uri;
+
 # This class does static discovery (preconfigured) for now. It could be
 # extended later to discover via the Directory.
 class Discovery extends ServiceInterface
 {
     public function serviceUrl (string $service)
+    {
+        return Uri::createFromString($this->lookup($service));
+    }
+
+    public function lookup (string $service)
     {
         switch ($service) {
             case "auth":

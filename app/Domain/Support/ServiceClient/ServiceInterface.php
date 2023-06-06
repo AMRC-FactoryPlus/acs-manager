@@ -16,9 +16,9 @@ abstract class ServiceInterface
     {
     }
 
-    public function fetch(string $type, string $url, $payload = null, $file = null)
+    public function fetch(...$args)
     {
         return $this->client->http()
-            ->fetch($type, static::$serviceName, $url, $payload, $file);
+            ->fetch(...$args, service: static::$serviceName);
     }
 }

@@ -6,6 +6,6 @@
 
 namespace App\Domain\Support\ServiceClient;
 
-class ServiceClientException extends Exception
+class ServiceClientException extends \Exception
 {
 }

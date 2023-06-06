@@ -11,13 +11,16 @@ use App\Domain\Support\ServiceClient;
 use App\Exceptions\ActionErrorException;
 use Illuminate\Support\Facades\Http as IlHttp;
 use Illuminate\Support\Facades\Log;
+use League\Uri\QueryString;
+use League\Uri\Uri;
 
 class HTTP 
 {
     public function __construct (public ServiceClient $client)
     { }
 
-    public function fetch(string $type, string $service, string $url, $payload = null, $file = null)
+    public function fetch(string $type, string $service, string $url, 
+        $payload = null, $file = null, array $query = null)
     {
         // Validate the request
         if (! in_array($type, ['get', 'post', 'put'])) {
@@ -25,7 +28,16 @@ class HTTP
         }
 
         $base = $this->client->discovery()->serviceUrl($service);
-        $url = $base . $url;
+        $url = Uri::createFromBaseUri($url, $base);
+        if (!is_null($query)) {
+            # Convert from PHP assoc-array to the alist the library wants.
+            # JSON encode the values as we go.
+            # XXX This does not allow to search for absence of a property.
+            $alist = array_map(
+                fn($k) => [$k, json_encode($query[$k])], 
+                array_keys($query));
+            $url = $url->withQuery(QueryString::build($alist));
+        }
 
         // Try the request with the cached token for the service
         $response = $this->do($type, $service, $url, $payload, $file, false);
