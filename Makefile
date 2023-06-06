@@ -21,7 +21,7 @@ push:
 	docker push "${tag}"
 
 run:
-	docker run -ti --rm "${tag}" /bin/sh
+	docker run -ti --rm -v "$$(pwd)":/local "${tag}" /bin/sh
 
 .PHONY: deploy restart logs
 
