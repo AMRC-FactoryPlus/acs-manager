@@ -7,7 +7,7 @@
 namespace App\Domain\FileService\Actions;
 
 use App\Domain\Devices\Models\Device;
-use App\Domain\Support\Actions\MakeConsumptionFrameworkRequest;
+use App\Domain\Support\ServiceClient;
 use App\Exceptions\ActionFailException;
 
 use function func_get_args;
@@ -20,10 +20,14 @@ class DownloadFileForDeviceAction
         $this->authorise(...func_get_args());
         $this->validate(...func_get_args());
 
-        $response = (new MakeConsumptionFrameworkRequest)->execute(type: 'post', service: 'file-service',
-            url: config('manager.file_service_url') . '/download', payload: [
-                'instance_uuid' => $device->instance_uuid, 'file_uuid' => $fileUuid,
-            ])['data'];
+        $response = ServiceClient::get()->http()->fetch(
+            type: 'post',
+            service: 'file-service',
+            url: '/download', 
+            payload: [
+                'instance_uuid' => $device->instance_uuid,
+                'file_uuid' => $fileUuid,
+            ]);
 
         return action_success($response->body());
     }

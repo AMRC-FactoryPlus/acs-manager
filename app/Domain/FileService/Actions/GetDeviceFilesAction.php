@@ -7,7 +7,7 @@
 namespace App\Domain\FileService\Actions;
 
 use App\Domain\Devices\Models\Device;
-use App\Domain\Support\Actions\MakeConsumptionFrameworkRequest;
+use App\Domain\Support\ServiceClient;
 use App\Exceptions\ActionFailException;
 
 use function func_get_args;
@@ -20,13 +20,11 @@ class GetDeviceFilesAction
         $this->authorise(...func_get_args());
         $this->validate(...func_get_args());
 
-        $response = (new MakeConsumptionFrameworkRequest)->execute(
+        $response = ServiceClient::get()->http()->fetch(
             type: 'get',
             service: 'file-service',
-            url: config(
-                'manager.file_service_url'
-            ) . '/device/' . $device->instance_uuid
-        )['data'];
+            url: '/device/' . $device->instance_uuid
+        );
 
         return action_success($response->json());
     }

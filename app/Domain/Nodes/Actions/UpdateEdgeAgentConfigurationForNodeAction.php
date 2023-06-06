@@ -8,9 +8,8 @@ namespace App\Domain\Nodes\Actions;
 
 use App\Domain\Devices\Models\Device;
 use App\Domain\Nodes\Models\Node;
-use App\Domain\Support\Actions\ConfigDBRequest;
-use App\Domain\Support\Actions\MakeConsumptionFrameworkRequest;
-use App\Domain\Support\UUIDs\CDApp;
+use App\Domain\Support\ServiceClient;
+use App\Domain\Support\ServiceClient\UUIDs;
 use App\EdgeAgentConfiguration;
 use App\Exceptions\ActionFailException;
 use App\Exceptions\ActionForbiddenException;
@@ -224,15 +223,18 @@ class UpdateEdgeAgentConfigurationForNodeAction
             throw new ActionFailException('Failed to validate Edge Agent configuration.');
         }
 
+        $fplus = ServiceClient::get();
+
         // Push the config to the ConfigDB
-        (new ConfigDBRequest)->putConfig(CDApp::EdgeAgentConfig, $node->uuid, $config);
+        $fplus->configdb()
+            ->putConfig(UUIDs\App::EdgeAgentConfig, $node->uuid, $config);
 
         if (! in_array(config('app.env'), ['local', 'testing'])) {
             // Ask the edge agent to reload the config
-            (new MakeConsumptionFrameworkRequest)->execute(
+            $fplus->http()->fetch(
                 type: 'post',
                 service: 'cmdesc',
-                url: config('manager.cmdesc_service_url') . '/v1/address/' . $node->group->name . '/' . $node->node_id,
+                url: '/v1/address/' . $node->group->name . '/' . $node->node_id,
                 payload: [
                     'name' => 'Node Control/Reload Edge Agent Config',
                     'value' => true,

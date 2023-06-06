@@ -4,22 +4,28 @@
  *  Copyright 2023 AMRC
  */
 
-namespace App\Domain\Support\Actions;
+namespace App\Domain\Support\ServiceClient;
 
 use App\Domain\Auth\Actions\GetServiceTokenAction;
+use App\Domain\Support\ServiceClient;
 use App\Exceptions\ActionErrorException;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Http as IlHttp;
 use Illuminate\Support\Facades\Log;
 
-use function func_get_args;
-
-class MakeConsumptionFrameworkRequest
+class HTTP 
 {
-    public function execute(string $type, string $service, string $url, $payload = null, $file = null)
+    public function __construct (public ServiceClient $client)
+    { }
+
+    public function fetch(string $type, string $service, string $url, $payload = null, $file = null)
     {
-        // Validate and authorise the request
-        $this->authorise(...func_get_args());
-        $this->validate(...func_get_args());
+        // Validate the request
+        if (! in_array($type, ['get', 'post', 'put'])) {
+            throw new ServiceClientException('Incorrect method passed to Fetch');
+        }
+
+        $base = $this->client->discovery()->serviceUrl($service);
+        $url = $base . $url;
 
         // Try the request with the cached token for the service
         $response = $this->do($type, $service, $url, $payload, $file, false);
@@ -31,15 +37,15 @@ class MakeConsumptionFrameworkRequest
         }
 
         if ($response->failed()) {
-            throw new ActionErrorException('Failed to communicate with ' . $service . '. Status: ' . $response->status() . '.');
+            throw new ServiceClientException('Failed to communicate with ' . $service . '. Status: ' . $response->status() . '.');
         }
 
-        return action_success($response);
+        return $response;
     }
 
     public function do(string $type, string $service, string $url, $payload = null, $file = null, $force = false)
     {
-        $base = Http::withToken((new GetServiceTokenAction)->execute($service, $force)['data']);
+        $base = IlHttp::withToken((new GetServiceTokenAction)->execute($service, $force)['data']);
 
         if ($file) {
             $base = $base->attach('file', fopen($file->getRealPath(), 'r'), $file->getClientOriginalName(), [
@@ -48,19 +54,5 @@ class MakeConsumptionFrameworkRequest
         }
 
         return $base->$type($url, $payload);
-    }
-
-    /**
-     * This action
-     **/
-    private function authorise(string $type, string $service, string $url, $payload = null, $file = null)
-    {
-    }
-
-    private function validate(string $type, string $service, string $url, $payload = null, $file = null)
-    {
-        if (! in_array($type, ['get', 'post', 'put'])) {
-            throw new ActionErrorException('Incorrect method passed to MakeConsumptionFrameworkRequest');
-        }
     }
 }

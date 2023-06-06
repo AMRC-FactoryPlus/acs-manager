@@ -7,7 +7,7 @@
 namespace App\Domain\FileService\Actions;
 
 use App\Domain\Devices\Models\Device;
-use App\Domain\Support\Actions\MakeConsumptionFrameworkRequest;
+use App\Domain\Support\ServiceClient;
 use App\Exceptions\ActionFailException;
 use Illuminate\Http\UploadedFile;
 
@@ -28,10 +28,11 @@ class UploadFileForDeviceAction
         $this->authorise(...func_get_args());
         $this->validate(...func_get_args());
 
-        (new MakeConsumptionFrameworkRequest)->execute(
+        ServiceClient::get()->http()->fetch(
             type: 'post',
             service: 'file-service',
-            url: config('manager.file_service_url') . '/upload', payload: [
+            url: '/upload', 
+            payload: [
                 'instance_uuid' => $device->instance_uuid,
                 'file_type_key' => $fileTypeKey,
                 'friendly_title' => $friendlyTitle,
@@ -40,7 +41,7 @@ class UploadFileForDeviceAction
                 'tags' => json_encode($tags, JSON_THROW_ON_ERROR),
             ],
             file: $file
-        )['data'];
+        );
 
         return action_success();
     }

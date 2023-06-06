@@ -9,10 +9,8 @@ namespace App\Domain\Nodes\Actions;
 use App\Domain\Groups\Models\Group;
 use App\Domain\Nodes\CRDs\KerberosKey;
 use App\Domain\Nodes\Models\Node;
-use App\Domain\Support\Actions\ConfigDBRequest;
-use App\Domain\Support\Actions\MakeConsumptionFrameworkRequest;
-use App\Domain\Support\UUIDs\CDApp;
-use App\Domain\Support\UUIDs\CDClass;
+use App\Domain\Support\ServiceClient;
+use App\Domain\Support\ServiceClient\UUIDs;
 use App\Exceptions\ActionErrorException;
 use App\Exceptions\ActionFailException;
 use App\Exceptions\ActionForbiddenException;
@@ -69,6 +67,7 @@ class CreateNodeAction
         $isCellGateway = ! is_null($nodeHostname);
         if (! $isCellGateway) {
             $nodeHostname = 'soft';
+
         }
 
         if ((bool) $isGateway === true) {
@@ -165,18 +164,22 @@ class CreateNodeAction
                  * management app
                  **/
 
+                $fplus = ServiceClient::get();
+                $cdb = $fplus->configdb();
+                $http = $fplus->http();
+
                 // Create an entry in the ConfigDB to describe this node using the Cell gateway (00da3c0b-f62b-4761-a689-39ad0c33f864)
                 // or Soft gateway (5bee4d24-32e1-44f8-b953-1f86ff4b3e87) class
                 // Create entry in the ConfigDB for the General object information Application (64a8bfa9-7772-45c4-9d1a-9e6290690957)
-                (new ConfigDBRequest)->createObject(
-                    class: $isCellGateway ? CDClass::CellGateway : CDClass::SoftGateway,
+                $cdb->createObject(
+                    class: $isCellGateway ? UUIDs\Klass::CellGateway : UUIDs\Klass::SoftGateway,
                     uuid: $nodeUuid,
                     name: $group->name . "-" . $node->node_id,
                 );
 
                 // Create entry in the ConfigDB for the Sparkplug address information (8e32801b-f35a-4cbf-a5c3-2af64d3debd7) Application
-                (new ConfigDBRequest)->putConfig(
-                    app: CDApp::SparkplugAddress, 
+                $cdb->putConfig(
+                    app: UUIDs\App::SparkplugAddress, 
                     obj: $nodeUuid,
                     payload: [
                         'node_id' => $nodeId,
@@ -185,8 +188,8 @@ class CreateNodeAction
                 );
 
                 // Create entry to deploy the Edge Agent
-                (new ConfigDBRequest)->putConfig(
-                    app: CDApp::EdgeAgentDeployment,
+                $cdb->putConfig(
+                    app: UUIDs\App::EdgeAgentDeployment,
                     obj: $nodeUuid,
                     payload: [
                         "hostname" => $nodeHostname,
@@ -194,10 +197,10 @@ class CreateNodeAction
                 );
 
                 // Create entry in the Auth service to map the Kerberos principal to the node UUID
-                (new MakeConsumptionFrameworkRequest)->execute(
+                $http->fetch(
                     type: 'post',
                     service: 'auth',
-                    url: config('manager.auth_service_url') . '/authz/principal',
+                    url: '/authz/principal',
                     payload: [
                         'uuid' => $nodeUuid,
                         'kerberos' => $this->getKerberosPrincipal($group, $nodeHostname, $nodeId),
@@ -205,10 +208,10 @@ class CreateNodeAction
                 );
 
                 // Create an ACL entry to allow the new node to participate as an Edge Node (87e4a5b7-9a89-4796-a216-39666a47b9d2)
-                (new MakeConsumptionFrameworkRequest)->execute(
+                $http->fetch(
                     type: 'post',
                     service: 'auth',
-                    url: config('manager.auth_service_url') . '/authz/ace',
+                    url: '/authz/ace',
                     payload: [
                         'action' => 'add',
                         'principal' => $nodeUuid,
