@@ -31,10 +31,8 @@ class HTTP
         $url = Uri::createFromBaseUri($url, $base);
         if (!is_null($query)) {
             # Convert from PHP assoc-array to the alist the library wants.
-            # JSON encode the values as we go.
-            # XXX This does not allow to search for absence of a property.
             $alist = array_map(
-                fn($k) => [$k, json_encode($query[$k])], 
+                fn($k) => [$k, $query[$k]], 
                 array_keys($query));
             $url = $url->withQuery(QueryString::build($alist));
         }

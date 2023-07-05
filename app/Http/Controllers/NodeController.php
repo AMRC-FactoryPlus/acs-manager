@@ -18,13 +18,9 @@ class NodeController extends Controller
     public function index()
     {
         // Get the group
-        $group = Group::where('id', request()->route('group'))->first();
-        if (! $group) {
-            throw new ActionFailException('The group does not exist.',
-                404);
-        }
+        $group = request()->route('group');
 
-        return process_action((new GetAccessibleNodesAction)->execute($group), NodeResourceCollection::class);
+        return process_action((new GetAccessibleNodesAction)->execute($group));
     }
 
     public function store(CreateNodeRequest $request)
