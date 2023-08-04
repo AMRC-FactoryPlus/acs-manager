@@ -17,7 +17,7 @@ class AuthenticateKerberosPrincipalAction
 {
     public function execute(string $username, string $password)
     {
-        if (! extension_loaded('krb5')) {
+        if (!extension_loaded('krb5')) {
             ray('NO KRB');
             exit('KRB5 Extension not installed');
         }
@@ -29,9 +29,7 @@ class AuthenticateKerberosPrincipalAction
 
         // Check if the login was successful
         try {
-            if (!env('SKIP_AUTHENTICATION')) {
-                $ccache->initPassword($username, $password, $flags);
-            }
+            $ccache->initPassword($username, $password, $flags);
         } catch (Exception $e) {
             Log::info('Authentication failed for ' . $username, [
                 'message' => $e->getMessage(),
@@ -59,7 +57,7 @@ class AuthenticateKerberosPrincipalAction
             $serverContext->registerAcceptorIdentity('/config/keytab/keytab');
             $accepted = $serverContext->acceptSecContext($token);
 
-            if (! $accepted) {
+            if (!$accepted) {
                 throw new ActionFailException('Authentication failed');
             }
         }
