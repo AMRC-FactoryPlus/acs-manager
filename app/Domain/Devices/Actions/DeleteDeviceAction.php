@@ -16,7 +16,7 @@ class DeleteDeviceAction
 {
 
     /**
-     * This action deletes the device from the database and clears up all connections, configurations and edge agent configurations
+     * This action deletes a device from the database and re-generates the edge agent configuration for the node
      **/
 
     private function authorise(Device $device) {
