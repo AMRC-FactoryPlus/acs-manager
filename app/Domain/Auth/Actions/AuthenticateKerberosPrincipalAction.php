@@ -26,9 +26,10 @@ class AuthenticateKerberosPrincipalAction
         $ccache = new KRB5CCache;
         $flags = ['tkt_lifetime' => 3600];
 
+
         // Check if the login was successful
         try {
-            $ccache->initPassword($username, $password, $flags);
+                $ccache->initPassword($username, $password, $flags);
         } catch (Exception $e) {
             Log::info('Authentication failed for ' . $username, [
                 'message' => $e->getMessage(),
