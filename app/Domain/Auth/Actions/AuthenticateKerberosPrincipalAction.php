@@ -29,7 +29,9 @@ class AuthenticateKerberosPrincipalAction
 
         // Check if the login was successful
         try {
+            if (!env('SKIP_AUTHENTICATION')) {
                 $ccache->initPassword($username, $password, $flags);
+            }
         } catch (Exception $e) {
             Log::info('Authentication failed for ' . $username, [
                 'message' => $e->getMessage(),
