@@ -83,11 +83,14 @@ class CreateNodeAction
             $namespace = $group->cluster->namespace;
 
             // Create the secret and label the Cell Gateway node in the K8s cluster to pick it up
-            if (config('app.env') !== 'local' || env('K8S_DEPLOY_WHEN_LOCAL', false)) {
+            if (!in_array(config('app.env'), ['local', 'testing']) || env('K8S_DEPLOY_WHEN_LOCAL', false)) {
 
-                if (config('app.env') === 'local' && env('K8S_DEPLOY_WHEN_LOCAL', false)) {
+                if (in_array(config('app.env'), ['local', 'testing']) && env('K8S_DEPLOY_WHEN_LOCAL', false)) {
                     ray('Using local K8s config file');
-                    $cluster = KubernetesCluster::fromKubeConfigYamlFile(base_path().'/'.env('LOCAL_K8S_CONFIG_FILE'));
+                    $cluster = KubernetesCluster::fromKubeConfigYamlFile(
+                        env('LOCAL_KUBECONFIG'),
+                        'default'
+                    );
                 } else {
                     $cluster = KubernetesCluster::inClusterConfiguration();
                 }
