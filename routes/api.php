@@ -74,6 +74,7 @@ Route::middleware('auth:api')->get('/groups/{group}/nodes/{node}/devices', [Devi
 Route::middleware('auth:api')->post('/groups/{group}/nodes/{node}/devices', [DeviceController::class, 'store']);
 Route::middleware('auth:api')->get('/groups/{group}/nodes/{node}/devices/{device}', [DeviceController::class, 'show']);
 Route::middleware('auth:api')->patch('/devices/{device}', [DeviceController::class, 'update']);
+Route::middleware('auth:api')->delete('/devices/{device}', [DeviceController::class, 'destroy']);
 Route::middleware('auth:api')->patch('/devices/{device}/origin-map', [OriginMapController::class, 'update']);
 Route::middleware('auth:api')->post('/devices/{device}/origin-map/activate', [OriginMapController::class, 'activate']);
 Route::middleware('auth:api')->get('/devices/{device}/files', [DeviceFileController::class, 'index']);
