@@ -29,22 +29,23 @@ class CreateNodeAction
 
     public function execute(
         Group $group,
-        $nodeId,
-        $isGateway = true,
-        $enabled = true,
-        $expiry = null,
-        $nodeHostname = null
-    ) {
+              $nodeId,
+              $isGateway = true,
+              $enabled = true,
+              $expiry = null,
+              $nodeHostname = null
+    )
+    {
         // =========================
         // Validate User Permissions
         // =========================
 
-        if (! auth()->user()->administrator) {
+        if (!auth()->user()->administrator) {
             throw new ActionForbiddenException('Only administrators can create new nodes.');
         }
 
-        if ($isGateway && ! $nodeHostname) {
-            if (! $group->cluster->has_central_agents) {
+        if ($isGateway && !$nodeHostname) {
+            if (!$group->cluster->has_central_agents) {
                 throw new ActionFailException('Soft Gateways can only be created in clusters with central agent nodes');
             }
 
@@ -63,12 +64,12 @@ class CreateNodeAction
         // Perform the Action
         // ===================
 
-        $isCellGateway = ! is_null($nodeHostname);
-        if (! $isCellGateway) {
+        $isCellGateway = !is_null($nodeHostname);
+        if (!$isCellGateway) {
             $nodeHostname = 'soft';
         }
 
-        if ((bool) $isGateway === true) {
+        if ((bool)$isGateway === true) {
             $node = Node::create([
                 'node_id' => $nodeId,
                 'k8s_hostname' => $nodeHostname,
@@ -82,8 +83,15 @@ class CreateNodeAction
             $namespace = $group->cluster->namespace;
 
             // Create the secret and label the Cell Gateway node in the K8s cluster to pick it up
-            if (! in_array(config('app.env'), ['local', 'testing'])) {
-                $cluster = KubernetesCluster::inClusterConfiguration();
+            if (config('app.env') !== 'local' || env('K8S_DEPLOY_WHEN_LOCAL', false)) {
+
+                if (config('app.env') === 'local' && env('K8S_DEPLOY_WHEN_LOCAL', false)) {
+                    ray('Using local K8s config file');
+                    $cluster = KubernetesCluster::fromKubeConfigYamlFile(base_path().'/'.env('LOCAL_K8S_CONFIG_FILE'));
+                } else {
+                    $cluster = KubernetesCluster::inClusterConfiguration();
+                }
+
                 $k8sSafeName = substr(
                     str_replace('_', '-', $this->getKerberosKeyCRDName($group, $nodeHostname, $nodeId)),
                     0,
