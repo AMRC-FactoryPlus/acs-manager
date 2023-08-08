@@ -39,7 +39,7 @@ class NodeController extends Controller
         }
 
         return process_action((new CreateNodeAction)->execute(group: $group, nodeId: $validated['node_id'],
-            isGateway: $validated['is_gateway'], enabled: $validated['enabled'],
+            enabled: $validated['enabled'],
             expiry: $validated['expiry'] ?? null, nodeHostname: $validated['node_hostname'] ?? null));
     }
 }
