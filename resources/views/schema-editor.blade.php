@@ -1,6 +1,6 @@
-@section('title', 'Edge Agents')
+@section('title', 'Schema Editor')
 @extends('layouts.home')
 
 @section('content')
-    <schema-editor-container :initial-data='@json($initialData)'></edge-agent-container>
+    <schema-editor-container :initial-data='@json($initialData)'></schema-editor-container>
 @endsection
