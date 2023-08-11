@@ -33,7 +33,7 @@
         </button>
       </div>
     </div>
-    <div class="flex-1 bg-red-50">
+    <div class="flex-1 bg-gray-50">
 
     </div>
   </div>
