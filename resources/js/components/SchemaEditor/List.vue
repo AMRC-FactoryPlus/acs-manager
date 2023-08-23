@@ -26,7 +26,7 @@
           <div>Instance_UUID</div>
         </div>
       </div>
-      <button class="flex items-center gap-3 border-2 w-full focus:bg-gray-100 hover:bg-gray-50 text-left" v-else-if="isMetric(property)">
+      <button @click="$emit('rowSelected', {name: name, property: property})" class="flex items-center gap-3 border-2 w-full focus:bg-gray-100 hover:bg-gray-50 text-left" v-else-if="isMetric(property)">
         <div v-tooltip="getMetricData(property).types[0]"
              class=" w-12 h-12 flex-shrink-0 flex items-center justify-center bg-gray-200">
           <i class="fa-solid fa-fw text-sm" :class="getMetricData(property).icon"></i>
@@ -67,18 +67,26 @@
             <div>{{name}}</div>
           </div>
         </div>
-        <List class="ml-10" :properties="property.properties"></List>
+        <List @rowSelected="e => $emit('rowSelected', e)" class="ml-10" :properties="property.properties"></List>
       </div>
       <div v-else>
         {{property}}
       </div>
     </div>
+    <OverflowMenu class="col-span-5"
+                  :options="newItemOptions">
+      <button type="button"
+              class="fpl-button-secondary m-1 h-10">
+        <div class="mr-2">Add</div>
+        <i class="fa-sharp fa-solid fa-plus text-xs"></i>
+      </button>
+    </OverflowMenu>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'SchemaEditor',
+  name: 'List',
 
   props: {
     /**
@@ -104,6 +112,11 @@ export default {
   },
 
   methods: {
+
+    selectMetric(metric) {
+      window.events.$emit('schema-editor-select-metric', metric);
+    },
+
     checkIfObject (input) {
       // First, check if the variable is not null, and its typeof returns 'object'
       // Then check if it is not an instance of Array, since arrays in JavaScript are also objects
@@ -118,7 +131,7 @@ export default {
     getMetricData (property) {
       return {
         types: property.allOf[1].properties.Sparkplug_Type.enum,
-        icon: `fa-${property.allOf[1].properties.Sparkplug_Type.enum[0][0].toLowerCase()}`,
+        icon: `fa-${property.allOf[1].properties.Sparkplug_Type.enum?.[0]?.[0].toLowerCase() || 'question text-red-500'}`,
         documentation: property.allOf[1].properties.Documentation.default,
         unit: property.allOf[1].properties.Eng_Unit?.default,
         low: property.allOf[1].properties.Eng_Low?.default,
@@ -154,7 +167,17 @@ export default {
   },
 
   data () {
-    return {}
+    return {
+      newItemOptions: [
+        {
+          title: 'New Metric',
+          value: 'metric',
+          action: () => {
+            this.$emit('new', 'metric')
+          },
+        }
+      ]
+    }
   },
 }
 </script>

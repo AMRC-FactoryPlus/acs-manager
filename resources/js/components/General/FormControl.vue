@@ -21,8 +21,6 @@
             <form-control-dropdown :col="true" :control="control" :value="value" select-first hide-title
                                    @valueUpdated="broadcastValueUpdated" @navigate="broadcastNavigation"/>
         </FormWrapper>
-        <form-control-multi-selection :key="control.id" v-else-if="control.type === 'multiSelection'" :control="control" :value="value"
-                                      @valueUpdated="broadcastValueUpdated"/>
         <form-control-checkbox :key="control.id" v-else-if="control.type === 'checkbox'" :control="control" :valid="valid" :value="value"
                                @valueUpdated="broadcastValueUpdated"/>
 
@@ -46,7 +44,6 @@ export default {
         'form-control-input': () => import(/* webpackPrefetch: true */ '../FormControls/Input.vue'),
         'form-control-selection': () => import(/* webpackPrefetch: true */ '../FormControls/Selection.vue'),
         'form-control-dropdown': () => import(/* webpackPrefetch: true */ '../FormControls/Dropdown.vue'),
-        'form-control-multi-selection': () => import(/* webpackPrefetch: true */ '../FormControls/MultiSelection.vue'),
         'form-control-checkbox': () => import(/* webpackPrefetch: true */ '../FormControls/Checkbox.vue'),
         'form-control-date-time-picker': () => import(/* webpackPrefetch: true */ '../FormControls/DateTimePicker.vue'),
     },
