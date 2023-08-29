@@ -108,7 +108,6 @@ export default {
       }
       this.handleError(error)
     })
-
   },
 
   watch: {
@@ -159,8 +158,8 @@ export default {
     updateType (type) {
       this.localMetric.Sparkplug_Type.enum = type
     },
-    updateName(e) {
-      this.localName = e;
+    updateName (e) {
+      this.localName = e
       this.$emit('updateName', this.localName)
     },
     updateMetric () {

@@ -21,7 +21,7 @@
         </button>
       </div>
       <input class="font-bold text-brand text-lg bg-gray-100 p-2" v-model="name">
-      <List @new="create" @rowSelected="handleMetricSelection" :guides="false" :properties="schema.properties"></List>
+      <List @new="create" @rowSelected="handleRowSelection" :guides="false" :properties="schema.properties"></List>
       <div class="flex items-center">
         <button @click="copy" class="fpl-button-brand h-10 flex-1 gap-3">
           <span>Copy JSON</span>
@@ -34,7 +34,8 @@
       </div>
     </div>
     <div class="flex-1 bg-gray-50">
-      <MetricEditPanel :selectedMetric="selectedMetric" @updateMetric="updateMetric" @updateName="updateName"></MetricEditPanel>
+      <MetricEditPanel :selectedMetric="selectedMetric" @updateMetric="updateMetric"
+                       @updateName="updateName"></MetricEditPanel>
     </div>
   </div>
 </template>
@@ -77,10 +78,6 @@ export default {
   mounted () {
     this.initialiseContainerComponent()
 
-    window.events.$on('schema-editor-select-metric', (metric) => {
-      this.selectedMetric = metric
-    })
-
     // Load the schema in the query string if it exists
     let urlParams = new URLSearchParams(window.location.search)
     if (urlParams.has('schema')) {
@@ -105,9 +102,7 @@ export default {
     create (type) {
       switch (type) {
         case 'metric':
-          console.log('Creating metric')
-
-          this.$set(this.schema.properties, 'New Metric', {
+          this.$set(this.schema.properties, 'New_Metric', {
             allOf: [
               {
                 $ref: 'https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/Common/Metric-v1.json',
@@ -126,25 +121,38 @@ export default {
               },
             ],
           })
+          break
+        case 'folder':
+          this.$set(this.schema.properties, 'New_Folder', {
+            'type': 'object',
+            'properties': {
+            },
+            'required': [],
+          })
       }
     },
 
-    handleMetricSelection (e) {
-      this.selectedMetric = e
+    handleRowSelection (e) {
+      if (e.type === 'metric') {
+        this.selectedMetric = e.payload
+      }
+      if (e.type === 'folder') {
+        this.selectedFolder = e.payload
+      }
     },
 
     updateName (name) {
-      let oldName = this.selectedMetric.name;
+      let oldName = this.selectedMetric.name
       this.$set(this.schema.properties, name, this.schema.properties[this.selectedMetric.name])
-      delete this.schema.properties[oldName];
-      this.selectedMetric.name = name;
+      delete this.schema.properties[oldName]
+      this.selectedMetric.name = name
     },
 
     updateMetric (updatedMetric) {
       this.updateNestedMetric(this.schema.properties, updatedMetric)
     },
 
-    // ! Needs fixing - UUIDS everywhere and go and find? We can then strip before saving
+    // ! Needs fixing - UUIDS everywhere and go and find? We can then strip before saving.
     updateNestedMetric (rows, updatedMetric) {
       for (let i = 0; i < rows.length; i++) {
         if (rows[i].id === updatedMetric.id) {
@@ -252,6 +260,7 @@ export default {
       schema: null,
       name: 'New_Schema-v1',
       selectedMetric: null,
+      selectedFolder: null,
 
     }
   },

@@ -26,7 +26,7 @@
           <div>Instance_UUID</div>
         </div>
       </div>
-      <button @click="$emit('rowSelected', {name: name, property: property})" class="flex items-center gap-3 border-2 w-full focus:bg-gray-100 hover:bg-gray-50 text-left" v-else-if="isMetric(property)">
+      <button @click="$emit('rowSelected', {type: 'metric', payload: {name: name, property: property}})" class="flex items-center gap-3 border-2 w-full active:bg-gray-100 hover:bg-gray-50 text-left" v-else-if="isMetric(property)">
         <div v-tooltip="getMetricData(property).types[0]"
              class=" w-12 h-12 flex-shrink-0 flex items-center justify-center bg-gray-200">
           <i class="fa-solid fa-fw text-sm" :class="getMetricData(property).icon"></i>
@@ -35,7 +35,7 @@
           <div>{{name}}</div>
         </div>
       </button>
-      <button @click="goto_url_tab(`schema-editor?schema=${property.$ref.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/','')}`)" class="flex items-center gap-3 border-2 w-full focus:bg-gray-100 hover:bg-gray-50 text-left" v-else-if="isSchema(property)">
+      <button @click="goto_url_tab(`schema-editor?schema=${property.$ref.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/','')}`)" class="flex items-center gap-3 border-2 w-full active:bg-gray-100 hover:bg-gray-50 text-left" v-else-if="isSchema(property)">
         <div v-tooltip="property.$ref"
              class=" w-12 h-12 flex-shrink-0 flex items-center justify-center bg-gray-200">
           <i class="fa-solid fa-fw text-sm fa-cube"></i>
@@ -45,7 +45,7 @@
           <div class="text-xs text-gray-500 truncate">{{property.$ref.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/','')}}</div>
         </div>
       </button>
-      <button @click="goto_url_tab(`schema-editor?schema=${property.patternProperties[Object.keys(property.patternProperties)[0]].$ref.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/','')}`)" class="flex items-center gap-3 border-2 w-full focus:bg-gray-100 hover:bg-gray-50 text-left" v-else-if="isSchemaArray(property)">
+      <button @click="goto_url_tab(`schema-editor?schema=${property.patternProperties[Object.keys(property.patternProperties)[0]].$ref.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/','')}`)" class="flex items-center gap-3 border-2 w-full active:bg-gray-100 hover:bg-gray-50 text-left" v-else-if="isSchemaArray(property)">
         <div v-tooltip="`Array of ${property.patternProperties[Object.keys(property.patternProperties)[0]].$ref}`"
              class=" w-12 h-12 flex-shrink-0 flex items-center justify-center bg-gray-200">
           <i class="fa-solid fa-fw text-sm fa-cubes"></i>
@@ -57,8 +57,8 @@
           </div>
         </div>
       </button>
-      <div v-else-if="isFolder(property)">
-        <div class="flex items-center gap-3 border-2 mb-3">
+      <div v-else-if="isFolder(property)" @click="$emit('rowSelected', {type: 'folder', payload: {name: name, property: property}})">
+        <button class="flex items-center gap-3 border-2 mb-3 w-full active:bg-gray-100 hover:bg-gray-50 text-left">
           <div v-tooltip="'Folder'"
                class="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-gray-200">
             <i class="fa-solid fa-fw text-sm fa-folder"></i>
@@ -66,7 +66,7 @@
           <div class="flex">
             <div>{{name}}</div>
           </div>
-        </div>
+        </button>
         <List @rowSelected="e => $emit('rowSelected', e)" class="ml-10" :properties="property.properties"></List>
       </div>
       <div v-else>
@@ -112,10 +112,6 @@ export default {
   },
 
   methods: {
-
-    selectMetric(metric) {
-      window.events.$emit('schema-editor-select-metric', metric);
-    },
 
     checkIfObject (input) {
       // First, check if the variable is not null, and its typeof returns 'object'
@@ -174,6 +170,13 @@ export default {
           value: 'metric',
           action: () => {
             this.$emit('new', 'metric')
+          },
+        },
+        {
+          title: 'New Folder',
+          value: 'folder',
+          action: () => {
+            this.$emit('new', 'folder')
           },
         }
       ]
