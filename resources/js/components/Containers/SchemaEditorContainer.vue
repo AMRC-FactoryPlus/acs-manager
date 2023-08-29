@@ -134,12 +134,10 @@ export default {
     },
 
     updateName (name) {
-      // This doesn't work for more than one update. Save button next to the input?
-
-      console.log('Updating name to: ', name)
       let oldName = this.selectedMetric.name;
       this.$set(this.schema.properties, name, this.schema.properties[this.selectedMetric.name])
       delete this.schema.properties[oldName];
+      this.selectedMetric.name = name;
     },
 
     updateMetric (updatedMetric) {
