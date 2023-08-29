@@ -101,9 +101,10 @@ export default {
   },
 
   watch: {
+    // ? How is the Value changing? We're not publishing it from localValue here.
     value: {
       handler(val) {
-        this.localValue = val
+        this.localValue = [...[], ...val]
         if (this.multi) {
           this.displayVal = this.localValue.map(v => this.control.options.find(o => o.value === v).title).join(', ')
         } else {
@@ -111,10 +112,6 @@ export default {
         }
       },
       immediate: true,
-    },
-
-    localValue (val) {
-      this.$emit('valueUpdated', val)
     },
 
     'control.options': function (val) {
@@ -134,12 +131,17 @@ export default {
     toggleDropdown () {
       this.showDropdown = !this.showDropdown
     },
+
     optionSelected (option) {
 
       if (this.multi) {
+
+        // If the value isn't an array, make it one
         if (Array.isArray(this.localValue) === false) {
           this.localValue = []
         }
+
+        // If the value is already in the array, remove it, otherwise add it
         if (this.localValue.includes(option.value)) {
           this.localValue.splice(this.value.indexOf(option.value), 1)
         } else {
@@ -160,7 +162,7 @@ export default {
   data () {
     return {
       showDropdown: false,
-      localValue: this.value,
+      localValue: {...{}, ...this.value},
       displayVal: this.value,
     }
   },

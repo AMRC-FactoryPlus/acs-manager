@@ -34,8 +34,10 @@
       </div>
     </div>
     <div class="flex-1 bg-gray-50">
-      <MetricEditPanel :selectedMetric="selectedMetric" @updateMetric="updateMetric"
-                       @updateName="updateName"></MetricEditPanel>
+      <MetricEditPanel :selectedMetric="selectedMetric"
+                       @updateMetric="updateMetric"
+                       @updateName="updateName"
+      ></MetricEditPanel>
     </div>
   </div>
 </template>
@@ -85,9 +87,10 @@ export default {
       axios.post('/api/github-proxy/', {
         path: schema.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/', ''),
       }).then(k => {
-        this.schema = k.data.data
-        if (!this.schema) {
+        if (!k.data.data) {
           this.schemaBrowserVisible = true
+        } else {
+          this.selectSchema({ rawSchema: k.data.data })
         }
       }).catch(error => {
         // Clear the query string if the schema is invalid
@@ -125,8 +128,7 @@ export default {
         case 'folder':
           this.$set(this.schema.properties, 'New_Folder', {
             'type': 'object',
-            'properties': {
-            },
+            'properties': {},
             'required': [],
           })
       }
@@ -142,30 +144,26 @@ export default {
     },
 
     updateName (name) {
-      let oldName = this.selectedMetric.name
-      this.$set(this.schema.properties, name, this.schema.properties[this.selectedMetric.name])
-      delete this.schema.properties[oldName]
-      this.selectedMetric.name = name
+      // Rename the key in this.schema.properties to the new name
+      let oldName = this.selectedMetric.name;
+
+      let newObject = {};
+      Object.keys(this.schema.properties)
+      .forEach(key => {
+        if (key !== oldName)
+          newObject[key] = this.schema.properties[key];
+        else
+          newObject[name] = {...{}, ...this.schema.properties[this.selectedMetric.name]}
+      });
+
+      this.schema.properties = newObject;
+      this.selectedMetric.name = name;
     },
 
     updateMetric (updatedMetric) {
-      this.updateNestedMetric(this.schema.properties, updatedMetric)
-    },
 
-    // ! Needs fixing - UUIDS everywhere and go and find? We can then strip before saving.
-    updateNestedMetric (rows, updatedMetric) {
-      for (let i = 0; i < rows.length; i++) {
-        if (rows[i].id === updatedMetric.id) {
-          this.$set(rows, i, updatedMetric)
-          return true
-        } else if (rows[i].children && rows[i].children.length) {
-          let found = this.updateNestedMetric(rows[i].children, updatedMetric)
-          if (found) {
-            return true
-          }
-        }
-      }
-      return false
+      // this.updateMetricWithUUID(updatedMetric.uuid, updatedMetric.payload, this.schema)
+
     },
 
     download () {
@@ -197,6 +195,46 @@ export default {
         this.name = this.schema.$id.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/', '').
             replace('.json', '')
       }
+
+      // Stamp each metric with a UUID, that is, each object with an allOf key and two items in the array, throughout the entire nested schema.properties
+      this.stampMetricsWithUUID(this.schema)
+    },
+
+    stampMetricsWithUUID (schema) {
+      if (schema.hasOwnProperty('properties')) {
+        for (const key in schema.properties) {
+          // Check if we have a `properties` key for nested metrics
+          if (schema.properties[key].hasOwnProperty('properties')) {
+            this.stampMetricsWithUUID(schema.properties[key])
+          } else {
+            // Check for 'type' key rather than 'allOf' key with two items
+            if (schema.properties[key].hasOwnProperty('allOf') && schema.properties[key].allOf.length === 2) {
+              schema.properties[key].uuid = uuidv4()
+            }
+          }
+        }
+      }
+
+      return schema
+    },
+
+    updateMetricWithUUID (uuid, property, schema) {
+      console.log('Updating Metric with UUID: ', uuid, property, schema)
+      if (schema.hasOwnProperty('properties')) {
+        for (const key in schema.properties) {
+          // Check if we have a `properties` key for nested metrics
+          if (schema.properties[key].hasOwnProperty('properties')) {
+            this.updateMetricWithUUID(uuid, property, schema.properties[key])
+          } else {
+            if (schema.properties[key].hasOwnProperty('allOf') && schema.properties[key].allOf.length === 2 &&
+                schema.properties[key].uuid === uuid) {
+              schema.properties[key].allOf = property.allOf
+            }
+          }
+        }
+      }
+
+      return schema
     },
 
     maybeNew () {

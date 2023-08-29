@@ -26,7 +26,7 @@
           <div>Instance_UUID</div>
         </div>
       </div>
-      <button @click="$emit('rowSelected', {type: 'metric', payload: {name: name, property: property}})" class="flex items-center gap-3 border-2 w-full active:bg-gray-100 hover:bg-gray-50 text-left" v-else-if="isMetric(property)">
+      <button @click="$emit('rowSelected', {type: 'metric', payload: {name: name, uuid: property.uuid, property: property}})" class="flex items-center gap-3 border-2 w-full active:bg-gray-100 hover:bg-gray-50 text-left" v-else-if="isMetric(property)">
         <div v-tooltip="getMetricData(property).types[0]"
              class=" w-12 h-12 flex-shrink-0 flex items-center justify-center bg-gray-200">
           <i class="fa-solid fa-fw text-sm" :class="getMetricData(property).icon"></i>

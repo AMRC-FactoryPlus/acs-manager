@@ -28,8 +28,7 @@
         <Dropdown
             multi
             class="p-4"
-            :value="localMetric.Sparkplug_Type.enum"
-            @input="updateType"
+            v-model="localMetric.Sparkplug_Type.enum"
             :valid="{}"
             :control="{
               name: metricSchema.properties.Sparkplug_Type.title,
@@ -37,30 +36,30 @@
             }"></Dropdown>
       </template>
     </Wrapper>
-    <Wrapper v-if="metricSchema">
-      <template #description>{{metricSchema.properties.Eng_Unit.description}}</template>
-      <template #content>
-        <div class="p-4 w-full">
-          <Input :showDescription="false"
-                 :control="{name: 'Engineering Unit',}"
-                 :valid="{}"
-                 v-model="localMetric.Eng_Unit.default"
-          ></Input>
-        </div>
-      </template>
-    </Wrapper>
-    <Wrapper v-if="metricSchema">
-      <template #description>{{metricSchema.properties.Documentation.description}}</template>
-      <template #content>
-        <div class="p-4 w-full">
-          <Input :showDescription="false"
-                 :control="{name: 'Description',}"
-                 :valid="{}"
-                 v-model="localMetric.Documentation.default"
-          ></Input>
-        </div>
-      </template>
-    </Wrapper>
+<!--    <Wrapper v-if="metricSchema">-->
+<!--      <template #description>{{metricSchema.properties.Eng_Unit?.description}}</template>-->
+<!--      <template #content>-->
+<!--        <div class="p-4 w-full">-->
+<!--          <Input :showDescription="false"-->
+<!--                 :control="{name: 'Engineering Unit',}"-->
+<!--                 :valid="{}"-->
+<!--                 v-model="localMetric.Eng_Unit.default"-->
+<!--          ></Input>-->
+<!--        </div>-->
+<!--      </template>-->
+<!--    </Wrapper>-->
+<!--    <Wrapper v-if="metricSchema">-->
+<!--      <template #description>{{metricSchema.properties.Documentation?.description}}</template>-->
+<!--      <template #content>-->
+<!--        <div class="p-4 w-full">-->
+<!--          <Input :showDescription="false"-->
+<!--                 :control="{name: 'Description',}"-->
+<!--                 :valid="{}"-->
+<!--                 v-model="localMetric.Documentation.default"-->
+<!--          ></Input>-->
+<!--        </div>-->
+<!--      </template>-->
+<!--    </Wrapper>-->
   </div>
 </template>
 
@@ -114,6 +113,7 @@ export default {
     selectedMetric: {
       handler (val) {
         this.localName = val.name
+        this.localUuid = val.uuid
         this.localMetric = {
           ...{
             Documentation: {
@@ -157,21 +157,27 @@ export default {
 
     updateType (type) {
       this.localMetric.Sparkplug_Type.enum = type
+      this.updateMetric();
     },
+
     updateName (e) {
       this.localName = e
       this.$emit('updateName', this.localName)
     },
+
     updateMetric () {
       this.$emit('updateMetric', {
-        allOf: [
-          {
-            $ref: 'https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/Common/Metric-v1.json',
-          },
-          {
-            properties: this.localMetric,
-          },
-        ],
+        uuid: this.selectedMetric.uuid,
+        payload: {
+          allOf: [
+            {
+              $ref: 'https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/Common/Metric-v1.json',
+            },
+            {
+              properties: this.localMetric,
+            },
+          ],
+        }
       })
     },
   },
@@ -179,6 +185,7 @@ export default {
   data () {
     return {
       localName: this.selectedMetric?.name,
+      localUuid: this.selectedMetric?.uuid,
       localMetric: this.selectedMetric?.property,
       metricSchema: null,
       types: null,
