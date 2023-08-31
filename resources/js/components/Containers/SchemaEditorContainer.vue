@@ -104,9 +104,11 @@ export default {
 
   methods: {
     create (type) {
+      let uuid = uuidv4();
       switch (type) {
         case 'metric':
-          this.$set(this.schema.properties, 'New_Metric', {
+          this.$set(this.schema.properties, uuid, {
+            uuid: uuid,
             allOf: [
               {
                 $ref: 'https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/Common/Metric-v1.json',
