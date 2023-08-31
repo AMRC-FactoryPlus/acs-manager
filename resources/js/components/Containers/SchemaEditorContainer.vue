@@ -162,7 +162,7 @@ export default {
 
     updateMetric (updatedMetric) {
 
-      // this.updateMetricWithUUID(updatedMetric.uuid, updatedMetric.payload, this.schema)
+      this.updateMetricWithUUID(updatedMetric.uuid, updatedMetric.payload, this.schema)
 
     },
 
