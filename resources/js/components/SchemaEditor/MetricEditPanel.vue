@@ -4,7 +4,7 @@
   -->
 
 <template>
-  <div v-if="this.selectedMetric">
+  <div v-if="selectedMetric && localMetric">
     <Wrapper v-if="metricSchema">
       <template #description>
         The name of the metric
@@ -36,30 +36,56 @@
             }"></Dropdown>
       </template>
     </Wrapper>
-<!--    <Wrapper v-if="metricSchema">-->
-<!--      <template #description>{{metricSchema.properties.Eng_Unit?.description}}</template>-->
-<!--      <template #content>-->
-<!--        <div class="p-4 w-full">-->
-<!--          <Input :showDescription="false"-->
-<!--                 :control="{name: 'Engineering Unit',}"-->
-<!--                 :valid="{}"-->
-<!--                 v-model="localMetric.Eng_Unit.default"-->
-<!--          ></Input>-->
-<!--        </div>-->
-<!--      </template>-->
-<!--    </Wrapper>-->
-<!--    <Wrapper v-if="metricSchema">-->
-<!--      <template #description>{{metricSchema.properties.Documentation?.description}}</template>-->
-<!--      <template #content>-->
-<!--        <div class="p-4 w-full">-->
-<!--          <Input :showDescription="false"-->
-<!--                 :control="{name: 'Description',}"-->
-<!--                 :valid="{}"-->
-<!--                 v-model="localMetric.Documentation.default"-->
-<!--          ></Input>-->
-<!--        </div>-->
-<!--      </template>-->
-<!--    </Wrapper>-->
+    <Wrapper v-if="metricSchema">
+      <template #description>{{metricSchema.properties.Documentation.description}}</template>
+      <template #content>
+        <div class="p-4 w-full">
+          <Input :showDescription="false"
+                 :control="{name: 'Description',}"
+                 :valid="{}"
+                 v-model="localMetric.Documentation.default"
+          ></Input>
+        </div>
+      </template>
+    </Wrapper>
+    <Wrapper v-if="metricSchema">
+      <template #description>{{metricSchema.properties.Eng_Unit?.description}}</template>
+      <template #content>
+        <div class="p-4 w-full">
+          <Input :showDescription="false"
+                 :control="{name: 'Engineering Unit',}"
+                 :valid="{}"
+                 v-model="localMetric.Eng_Unit.default"
+          ></Input>
+        </div>
+      </template>
+    </Wrapper>
+    <Wrapper v-if="metricSchema">
+      <template #description>{{metricSchema.properties.Eng_Low?.description}}</template>
+      <template #content>
+        <div class="p-4 w-full">
+          <Input :showDescription="false"
+                 :control="{name: 'Low',}"
+                 :valid="{}"
+                 v-model="localMetric.Eng_Low.default"
+          ></Input>
+        </div>
+      </template>
+    </Wrapper>
+    <Wrapper v-if="metricSchema">
+      <template #description>{{metricSchema.properties.Eng_High?.description}}</template>
+      <template #content>
+        <div class="p-4 w-full">
+          <Input :showDescription="false"
+                 :control="{name: 'High',}"
+                 :valid="{}"
+                 v-model="localMetric.Eng_High.default"
+          ></Input>
+        </div>
+      </template>
+    </Wrapper>
+
+
   </div>
 </template>
 
@@ -107,36 +133,36 @@ export default {
       }
       this.handleError(error)
     })
+    this.selectMetric()
   },
 
   watch: {
-    selectedMetric: {
+    'selectedMetric.uuid': {
       handler (val) {
-        this.localName = val.name
-        this.localUuid = val.uuid
-        this.localMetric = {
+        this.selectMetric()
+      },
+    },
+
+    localMetric: {
+      handler (val) {
+        this.$emit('updateMetric', {
+          ...this.selectedMetric,
           ...{
-            Documentation: {
-              default: '',
-            },
-            Sparkplug_Type: {
-              default: ['String'],
-            },
-            Eng_Unit: {
-              default: '',
-            },
-            Eng_Low: {
-              default: '',
-            },
-            Eng_High: {
-              default: '',
+            property: {
+              allOf: [
+                {
+                  $ref: 'https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/Common/Metric-v1.json',
+                },
+                {
+                  properties: val,
+                },
+              ],
             },
           },
-          ...val.property.allOf[1].properties,
-        }
-      },
-      deep: true,
+        })
+      }, deep: true,
     },
+
   },
 
   computed: {
@@ -155,30 +181,34 @@ export default {
       return options.some(e => e.value === val)
     },
 
-    updateType (type) {
-      this.localMetric.Sparkplug_Type.enum = type
-      this.updateMetric();
-    },
-
     updateName (e) {
       this.localName = e
       this.$emit('updateName', this.localName)
     },
 
-    updateMetric () {
-      this.$emit('updateMetric', {
-        uuid: this.selectedMetric.uuid,
-        payload: {
-          allOf: [
-            {
-              $ref: 'https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/Common/Metric-v1.json',
-            },
-            {
-              properties: this.localMetric,
-            },
-          ],
-        }
-      })
+    selectMetric () {
+      this.localName = this.selectedMetric?.name
+      this.localUuid = this.selectedMetric?.uuid
+      this.localMetric = {
+        ...{
+          Documentation: {
+            default: '',
+          },
+          Sparkplug_Type: {
+            default: ['String'],
+          },
+          Eng_Unit: {
+            default: '',
+          },
+          Eng_Low: {
+            default: '',
+          },
+          Eng_High: {
+            default: '',
+          },
+        },
+        ..._.cloneDeep(this.selectedMetric.property.allOf[1].properties),
+      }
     },
   },
 
@@ -186,7 +216,7 @@ export default {
     return {
       localName: this.selectedMetric?.name,
       localUuid: this.selectedMetric?.uuid,
-      localMetric: this.selectedMetric?.property,
+      localMetric: null,
       metricSchema: null,
       types: null,
     }

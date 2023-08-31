@@ -34,7 +34,8 @@
       </div>
     </div>
     <div class="flex-1 bg-gray-50">
-      <MetricEditPanel :selectedMetric="selectedMetric"
+      <MetricEditPanel v-if="selectedMetric"
+                      :selectedMetric="selectedMetric"
                        @updateMetric="updateMetric"
                        @updateName="updateName"
       ></MetricEditPanel>
@@ -161,19 +162,18 @@ export default {
     },
 
     updateMetric (updatedMetric) {
-
-      this.updateMetricWithUUID(updatedMetric.uuid, updatedMetric.payload, this.schema)
+      this.updateMetricWithUUID(updatedMetric, this.schema)
 
     },
 
     download () {
-      download(JSON.stringify(this.schema, null, 2),
+      download(JSON.stringify(this.getSchemaWithoutUUIDFields(), null, 2),
           `${this.schema.$id.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/', '')}`,
           'text/plain')
     },
 
     copy () {
-      navigator.clipboard.writeText(JSON.stringify(this.schema, null, 2))
+      navigator.clipboard.writeText(JSON.stringify(this.getSchemaWithoutUUIDFields(), null, 2))
       window.showNotification({
         title: 'Copied',
         description: 'The JSON for this schema has been copied to the clipboard.',
@@ -193,7 +193,6 @@ export default {
       if (this.schema.$id.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/', '') === 'undefined') {
         this.name = 'New_Schema-v1';
       } else {
-        console.log('Schema has no name')
         this.name = this.schema.$id.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/', '').
             replace('.json', '')
       }
@@ -220,17 +219,36 @@ export default {
       return schema
     },
 
-    updateMetricWithUUID (uuid, property, schema) {
-      console.log('Updating Metric with UUID: ', uuid, property, schema)
+    getSchemaWithoutUUIDFields () {
+      let s = _.cloneDeep(this.schema);
+
+      if (s.hasOwnProperty('properties')) {
+        for (const key in s.properties) {
+          // Check if we have a `properties` key for nested metrics
+          if (s.properties[key].hasOwnProperty('properties')) {
+            this.getSchemaWithoutUUIDFields(s.properties[key])
+          } else {
+            // Check for 'type' key rather than 'allOf' key with two items
+            if (s.properties[key].hasOwnProperty('allOf') && s.properties[key].allOf.length === 2) {
+              delete s.properties[key].uuid
+            }
+          }
+        }
+      }
+
+      return s
+    },
+
+    updateMetricWithUUID (p, schema) {
       if (schema.hasOwnProperty('properties')) {
         for (const key in schema.properties) {
           // Check if we have a `properties` key for nested metrics
           if (schema.properties[key].hasOwnProperty('properties')) {
-            this.updateMetricWithUUID(uuid, property, schema.properties[key])
+            this.updateMetricWithUUID(p.uuid, p.property, schema.properties[key])
           } else {
             if (schema.properties[key].hasOwnProperty('allOf') && schema.properties[key].allOf.length === 2 &&
-                schema.properties[key].uuid === uuid) {
-              schema.properties[key].allOf = property.allOf
+                schema.properties[key].uuid === p.uuid) {
+              schema.properties[key].allOf = p.property.allOf
             }
           }
         }
