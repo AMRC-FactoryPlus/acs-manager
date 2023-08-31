@@ -190,8 +190,10 @@ export default {
       this.schema = schema.rawSchema
 
       // Remove the URL up to main/ and .json from the end of the schema $id
-      if (this.schema.$id.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/', '') ===
-          undefined) {
+      if (this.schema.$id.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/', '') === 'undefined') {
+        this.name = 'New_Schema-v1';
+      } else {
+        console.log('Schema has no name')
         this.name = this.schema.$id.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/', '').
             replace('.json', '')
       }
