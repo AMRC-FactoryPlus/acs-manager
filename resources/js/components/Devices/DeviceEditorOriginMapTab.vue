@@ -64,6 +64,7 @@
       <div class="flex flex-grow overflow-auto">
         <div class="flex flex-col overflow-y-auto flex-shrink-0 w-1/4">
           <SchemaGroup :key="groupRerenderTrigger" @selected="selectMetric" @newObject="newObject"
+                       @deleteObject="maybeDeleteObject"
                        class="overflow-x-auto border-l-0" :schema="schema"
                        :selected-metric="selectedMetric" :model="model"></SchemaGroup>
           <div v-if="!loading"
@@ -140,7 +141,7 @@ export default {
     schema: {
       handler: function (val, oldVal) {
         if (oldVal === null) {
-          this.createDynamicSchemaObjects()
+          this.updateDynamicSchemaObjects()
         }
       },
       deep: true,
@@ -191,11 +192,11 @@ export default {
       // 3. Iterate through the model and create schema objects where they don't yet exist
       if (this.schema) {
         // Handle a race condition whereby the schema might not have loaded yet. In which case we use the schema watcher
-        this.createDynamicSchemaObjects()
+        this.updateDynamicSchemaObjects()
       }
     },
 
-    createDynamicSchemaObjects () {
+    updateDynamicSchemaObjects () {
       /** This method goes through the model recursively and looks for Schema_UUIDs. If it finds one it works out where
        * it was found and checks the relative place in the Schema object to see if it's the child of a regex. If it is
        * then it won't have the required schema objects populated so we need to create them.
@@ -208,16 +209,16 @@ export default {
     },
 
     searchForSchemaUUID (modelLevel, nestingPointer) {
+      // The nestingPointer has the name of the new object on the end, so to see if it belongs to a patternProperties
+      // we need to create a new array without the last element and then add a `properties` element before every
+      // element so that we have a path to the object in the schema.
+
+      let n = nestingPointer.slice(0, -1).flatMap(e => ['properties', e])
+
       Object.keys(modelLevel).forEach(key => {
         if (key === 'Schema_UUID') {
           // Ignore metric schemas
           if (modelLevel[key] !== 'b16275f1-e443-4c41-a482-fcbdfbd20769') {
-
-            // The nestingPointer has the name of the new object on the end, so to see if it belongs to a patternProperties
-            // we need to create a new array without the last element and then add a `properties` element before every
-            // element so that we have a path to the object in the schema.
-
-            let n = nestingPointer.slice(0, -1).flatMap(e => ['properties', e])
 
             // Work out what the object looks like for this model in the schema
             let nestedProperty = n.reduce((object, key) => object[key], this.schema)
@@ -226,10 +227,10 @@ export default {
             if (nestedProperty.patternProperties) {
 
               // Get the first key within nestedProperty.patternProperties that will be the regex
-              let regexKey = Object.keys(nestedProperty.patternProperties)[0];
+              let regexKey = Object.keys(nestedProperty.patternProperties)[0]
 
               // Get the content of that schema, which will be the object that we need to create
-              let schemaToInstantiate = nestedProperty.patternProperties[regexKey];
+              let schemaToInstantiate = nestedProperty.patternProperties[regexKey]
 
               // Get the last element of the nestingPointer which will be the name of the object to create
               let objectName = nestingPointer[nestingPointer.length - 1]
@@ -376,6 +377,57 @@ export default {
       this.newObjectContext = [...val].reverse()
     },
 
+    maybeDeleteObject(val) {
+      console.log(val)
+      window.showNotification({
+        title: 'Are you sure?',
+        description: `Are you sure you want to delete ${[...val].reverse().map(e => e.key).join('.')}?`,
+        type: 'error',
+        persistent: true,
+        buttons: [
+          {
+            text: 'Delete', type: 'error', loadingOnClick: true, action: () => {
+              this.deleteObject(val)
+            },
+          },
+          {text: 'Cancel', isClose: true}
+        ],
+        id: 'f222b117-d9fb-463d-812a-c58f38f89459',
+      })
+    },
+
+    deleteObject (val) {
+
+      let deleteObjectContext = [...val].reverse().map(e => e.key)
+
+      // Delete the entry from the model
+      let lastKey = deleteObjectContext.pop()
+      let nestedProperty = deleteObjectContext.reduce((object, key) => object[key], this.model)
+
+      this.$delete(nestedProperty, lastKey)
+
+      // Delete the entry from the schema
+      // The nestingPointer has the name of the new object on the end, so to see if it belongs to a patternProperties
+      // we need to create a new array without the last element and then add a `properties` element before every
+      // element so that we have a path to the object in the schema.
+
+      let n = deleteObjectContext.flatMap(e => ['properties', e])
+
+      // Work out what the object looks like for this model in the schema
+      let nestedSchemaProperty = n.reduce((object, key) => object[key], this.schema)
+
+      this.$delete(nestedSchemaProperty.properties, lastKey)
+
+      if (Object.keys(nestedSchemaProperty.properties).length === 0) {
+        this.$delete(nestedSchemaProperty, 'properties')
+      }
+
+      this.groupRerenderTrigger = +new Date()
+      this.markDirty('Deleted Object')
+      this.updateDynamicSchemaObjects()
+      window.hideNotification({id: 'f222b117-d9fb-463d-812a-c58f38f89459'});
+    },
+
     /**
      * This function adds a new instance of an object represented in the schema by patternProperties.
      */
@@ -393,7 +445,7 @@ export default {
       this.newObjectContext = null
       this.groupRerenderTrigger = +new Date()
       this.markDirty('New Object')
-      this.createDynamicSchemaObjects();
+      this.updateDynamicSchemaObjects()
     },
 
     selectMetric (val) {

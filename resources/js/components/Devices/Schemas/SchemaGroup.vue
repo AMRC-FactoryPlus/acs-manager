@@ -16,7 +16,8 @@
         <button type="button"
                 @click.stop="toggle(key)"
                 class="fpl-button-secondary disabled:opacity-50 !text-gray-800 hover:bg-gray-900 hover:bg-opacity-10 flex gap-1 w-full !justify-start">
-          <i v-if="isToggled(key)" class="fa-sharp fa-solid fa-chevron-down fa-fw text-xs text-gray-400 group-hover:text-gray-900"></i>
+          <i v-if="isToggled(key)"
+             class="fa-sharp fa-solid fa-chevron-down fa-fw text-xs text-gray-400 group-hover:text-gray-900"></i>
           <i v-else class="fa-sharp fa-solid fa-chevron-up fa-fw text-xs"></i>
           <div>
             <div class="font-bold">{{key}}</div>
@@ -39,6 +40,15 @@
               v-if="'patternProperties' in schema.properties[key]">
             <i class="fa-sharp fa-solid fa-plus mr-1 text-xs"></i>
             <div>Add</div>
+          </button>
+          <button
+              v-tooltip="`Delete ${key}`"
+              @click="$emit('deleteObject', [{
+                key: key,
+              }])"
+              class="invisible group-hover:visible fpl-button-secondary flex items-center justify-center hover:text-red-300 hover:bg-transparent"
+              v-else-if="canBeDeleted()">
+            <i class="fa-sharp fa-solid fa-trash text-xs"></i>
           </button>
         </div>
       </div>
@@ -68,6 +78,7 @@
       <SchemaGroup
           @selected="e => $emit('selected', [...e, ...[{key: key, schemaUUID: schema.properties[key].properties?.Schema_UUID?.const}]])"
           @newObject="e => $emit('newObject', [...e, ...[{key: key}]])"
+          @deleteObject="e => $emit('deleteObject', [...e, ...[{key: key}]])"
           @addToMetricArray="$emit('addToMetricArray')"
           v-show="!isToggled(key)"
           v-if="type(key)==='object'"
@@ -89,9 +100,9 @@ export default {
   mounted () {
     if (localStorage.getItem(`toggleState-${this.model.Instance_UUID}`)) {
       try {
-        this.toggleState = JSON.parse(localStorage.getItem(`toggleState-${this.model.Instance_UUID}`));
-      } catch(e) {
-        localStorage.removeItem(`toggleState-${this.model.Instance_UUID}`);
+        this.toggleState = JSON.parse(localStorage.getItem(`toggleState-${this.model.Instance_UUID}`))
+      } catch (e) {
+        localStorage.removeItem(`toggleState-${this.model.Instance_UUID}`)
       }
     }
   },
@@ -115,8 +126,25 @@ export default {
 
   methods: {
 
-    isEmptyNesting(schema, key) {
-      return Object.keys(schema.properties[key]).length === 2 && Object.keys(schema.properties[key]).includes('type') && Object.keys(schema.properties[key]).includes('patternProperties')
+    isEmptyNesting (schema, key) {
+      return Object.keys(schema.properties[key]).length === 2 && Object.keys(schema.properties[key]).includes('type') &&
+          Object.keys(schema.properties[key]).includes('patternProperties')
+    },
+
+    canBeDeleted () {
+
+      // The nestingPointer has the name of the new object on the end, so to see if it belongs to a patternProperties
+      // we need to create a new array without the last element and then add a `properties` element before every
+      // element so that we have a path to the object in the schema.
+      let n = this.nestedPath.slice(0, -1).flatMap(e => ['properties', e])
+
+      // Work out what the object looks like for this model in the schema
+      let nestedProperty = n.reduce((object, key) => object[key], this.schema)
+
+      // If the nestedProperty has a patternProperties then we are a dynamic object and can be deleted
+      if (nestedProperty?.patternProperties) {
+        return true;
+      }
     },
 
     type (key) {
@@ -136,7 +164,7 @@ export default {
       return 'unknown'
     },
 
-    getTogglePath(obj) {
+    getTogglePath (obj) {
       return `${this.nestedPath.length > 0 ? (this.nestedPath.join('.') + '.') : ''}${obj}`
     },
 
@@ -147,12 +175,12 @@ export default {
       } else {
         this.toggleState.splice(this.toggleState.indexOf(obj), 1)
       }
-      this.saveToggleState();
+      this.saveToggleState()
     },
 
-    saveToggleState() {
-      const parsed = JSON.stringify(this.toggleState);
-      localStorage.setItem(`toggleState-${this.model.Instance_UUID}`, parsed);
+    saveToggleState () {
+      const parsed = JSON.stringify(this.toggleState)
+      localStorage.setItem(`toggleState-${this.model.Instance_UUID}`, parsed)
     },
 
     isToggled (obj) {
