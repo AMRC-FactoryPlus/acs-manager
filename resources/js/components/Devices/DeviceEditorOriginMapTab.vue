@@ -594,7 +594,6 @@ export default {
 
       axios.patch(`/api/devices/${this.device.id}/origin-map`, {
         'configuration': JSON.stringify(this.model),
-        'metrics': JSON.stringify({}),
         'activate': activate,
         'device_schema_id': this.selectedSchemaId,
         'device_schema_version_id': this.selectedSchemaVersionId,
