@@ -615,7 +615,7 @@ export default {
         if (error && error.response && error.response.status === 401) {
           this.goto_url('/login')
         }
-        this.handleError(error, true)
+        this.handleError(error)
       })
 
     },

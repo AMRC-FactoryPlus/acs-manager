@@ -139,7 +139,7 @@ export default {
       let n = this.nestedPath.slice(0, -1).flatMap(e => ['properties', e])
 
       // Work out what the object looks like for this model in the schema
-      let nestedProperty = n.reduce((object, key) => object[key], this.schema)
+      let nestedProperty = n.reduce((object, key) => object?.[key], this.schema)
 
       // If the nestedProperty has a patternProperties then we are a dynamic object and can be deleted
       if (nestedProperty?.patternProperties) {
