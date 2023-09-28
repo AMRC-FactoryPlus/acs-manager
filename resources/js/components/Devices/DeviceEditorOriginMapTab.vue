@@ -230,7 +230,7 @@ export default {
               let regexKey = Object.keys(nestedProperty.patternProperties)[0]
 
               // Get the content of that schema, which will be the object that we need to create
-              let schemaToInstantiate = nestedProperty.patternProperties[regexKey]
+              let schemaToInstantiate = _.cloneDeep(nestedProperty.patternProperties[regexKey])
 
               // Get the last element of the nestingPointer which will be the name of the object to create
               let objectName = nestingPointer[nestingPointer.length - 1]
