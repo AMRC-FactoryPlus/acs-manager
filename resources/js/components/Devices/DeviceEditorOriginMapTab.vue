@@ -458,10 +458,10 @@ export default {
       let value = reversed.reduce((acc, curr) => acc && acc[curr.key], this.model)
 
       // Get the schema for this metric
-      let metricSchema = val[0].value.allOf[0].properties
-      Object.keys(val[0].value.allOf[1].properties).forEach(index => {
-        metricSchema[index] = val[0].value.allOf[1].properties[index]
-      })
+      let metricSchema = {
+        ...val[0].value.allOf[0].properties,
+        ...val[0].value.allOf[1].properties
+      }
 
       // If the value is null or undefined then we need to create the model
       if (value === null || value === undefined) {
