@@ -17,7 +17,6 @@ class GrantUserPermissionToAccessNodeRequest extends FormRequest
      */
     public function authorize()
     {
-
         return true;
     }
 

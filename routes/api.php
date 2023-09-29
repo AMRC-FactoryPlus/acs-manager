@@ -28,7 +28,6 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-
 // ------ Testing ------ //
 if (env('APP_ENV', 'local') !== 'production') {
     Route::post('testing/exception_fail', [APITestController::class, 'fail']);

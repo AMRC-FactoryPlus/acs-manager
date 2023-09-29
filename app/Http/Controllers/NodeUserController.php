@@ -19,20 +19,20 @@ class NodeUserController extends Controller
     {
         $validated = $request->validated();
 
-        if (!auth()->user()->administrator) {
+        if (! auth()->user()->administrator) {
             throw new ActionForbiddenException('Only administrators can grant access to nodes.');
         }
 
         // Get the user
-        $user = User::where('username', $validated['user'])->firstOr(function() {
+        $user = User::where('username', $validated['user'])->firstOr(function () {
             throw new ActionFailException('The user does not exist.', 404);
         });
 
         // Get the node
-        $node = Node::where('id', request()->route('node'))->firstOr(function() {
+        $node = Node::where('id', request()->route('node'))->firstOr(function () {
             throw new ActionFailException('The node does not exist.', 404);
         });
 
-        (new GrantUserPermissionToAccessNodeAction())->execute($user, $node);
+        (new GrantUserPermissionToAccessNodeAction)->execute($user, $node);
     }
 }
