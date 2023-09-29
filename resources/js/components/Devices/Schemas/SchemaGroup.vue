@@ -32,10 +32,7 @@
         <div class="flex items-center justify-center gap-1">
           <button
               v-tooltip="`Create ${key} entry`"
-              @click="$emit('newObject', [{
-                key: key,
-                value: schema.properties[key],
-              }])"
+              @click="newObject(key, schema)"
               class="fpl-button-secondary flex items-center justify-center"
               v-if="'patternProperties' in schema.properties[key]">
             <i class="fa-sharp fa-solid fa-plus mr-1 text-xs"></i>
@@ -126,6 +123,15 @@ export default {
 
   methods: {
 
+    newObject (key, schema) {
+      this.$emit('newObject', [
+        {
+          key: key,
+          value: schema.properties[key],
+        }])
+      this.toggle(key, true)
+    },
+
     isEmptyNesting (schema, key) {
       return Object.keys(schema.properties[key]).length === 2 && Object.keys(schema.properties[key]).includes('type') &&
           Object.keys(schema.properties[key]).includes('patternProperties')
@@ -143,7 +149,7 @@ export default {
 
       // If the nestedProperty has a patternProperties then we are a dynamic object and can be deleted
       if (nestedProperty?.patternProperties) {
-        return true;
+        return true
       }
     },
 
@@ -168,12 +174,22 @@ export default {
       return `${this.nestedPath.length > 0 ? (this.nestedPath.join('.') + '.') : ''}${obj}`
     },
 
-    toggle (obj) {
+    toggle (obj, state = null) {
 
-      if (!this.toggleState.includes(this.getTogglePath(obj))) {
-        this.toggleState.push(this.getTogglePath(obj))
+      if (state === true) {
+        if (!this.toggleState.includes(this.getTogglePath(obj))) {
+          this.toggleState.push(this.getTogglePath(obj))
+        }
+      } else if (state === false) {
+        if (this.toggleState.includes(this.getTogglePath(obj))) {
+          this.toggleState.splice(this.toggleState.indexOf(this.getTogglePath(obj)), 1)
+        }
       } else {
-        this.toggleState.splice(this.toggleState.indexOf(obj), 1)
+        if (!this.toggleState.includes(this.getTogglePath(obj))) {
+          this.toggleState.push(this.getTogglePath(obj))
+        } else {
+          this.toggleState.splice(this.toggleState.indexOf(this.getTogglePath(obj)), 1)
+        }
       }
       this.saveToggleState()
     },

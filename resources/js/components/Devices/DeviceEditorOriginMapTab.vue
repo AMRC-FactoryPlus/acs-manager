@@ -197,12 +197,13 @@ export default {
     },
 
     updateDynamicSchemaObjects () {
+
       /** This method goes through the model recursively and looks for Schema_UUIDs. If it finds one it works out where
        * it was found and checks the relative place in the Schema object to see if it's the child of a regex. If it is
        * then it won't have the required schema objects populated so we need to create them.
-       */
+       **/
 
-          // The nestingPointer array is used to keep track of where we are in the model
+      // The nestingPointer array is used to keep track of where we are in the model
       let nestingPointer = []
       this.searchForSchemaUUID(this.model, nestingPointer)
 
@@ -215,36 +216,44 @@ export default {
 
       let n = nestingPointer.slice(0, -1).flatMap(e => ['properties', e])
 
-      Object.keys(modelLevel).forEach(key => {
-        if (key === 'Schema_UUID') {
-          // Ignore metric schemas
-          if (modelLevel[key] !== 'b16275f1-e443-4c41-a482-fcbdfbd20769') {
+      // If we have a Schema_UUID in here then create it first to avoid child before parent issues
+      if (Object.keys(modelLevel).includes('Schema_UUID')) {
+        if (modelLevel.Schema_UUID !== 'b16275f1-e443-4c41-a482-fcbdfbd20769') {
 
-            // Work out what the object looks like for this model in the schema
-            let nestedProperty = n.reduce((object, key) => object[key], this.schema)
+          // Work out what the object looks like for this model in the schema
+          let nestedProperty = n.reduce((object, key) => object[key], this.schema)
 
-            // If the nestedProperty has a patternProperties then we need to create the schema objects
-            if (nestedProperty.patternProperties) {
+          // If the nestedProperty has a patternProperties then we need to create the schema objects
+          if (nestedProperty.patternProperties) {
 
-              // Get the first key within nestedProperty.patternProperties that will be the regex
-              let regexKey = Object.keys(nestedProperty.patternProperties)[0]
+            // Get the first key within nestedProperty.patternProperties that will be the regex
+            let regexKey = Object.keys(nestedProperty.patternProperties)[0]
 
-              // Get the content of that schema, which will be the object that we need to create
-              let schemaToInstantiate = nestedProperty.patternProperties[regexKey]
+            // Get the content of that schema, which will be the object that we need to create
+            let schemaToInstantiate = _.cloneDeep(nestedProperty.patternProperties[regexKey])
 
-              // Get the last element of the nestingPointer which will be the name of the object to create
-              let objectName = nestingPointer[nestingPointer.length - 1]
+            // Get the last element of the nestingPointer which will be the name of the object to create
+            let objectName = nestingPointer[nestingPointer.length - 1]
 
-              // console.log('PatternProperties found. Creating', schemaToInstantiate.title, 'called', objectName ,'at', n.join('.'), schemaToInstantiate)
+            // console.log('PatternProperties found. Creating', schemaToInstantiate.title, 'called', objectName ,'at', n.join('.'), schemaToInstantiate)
 
-              // Create the object
-              this.set(n.join('.') + '.properties.' + objectName, schemaToInstantiate, this.schema, '.')
+            // Create the object
+            this.set(n.join('.') + '.properties.' + objectName, schemaToInstantiate, this.schema, '.')
 
-              this.markDirty()
-            }
-
+            this.markDirty()
           }
-        } else if (typeof modelLevel[key] === 'object') {
+
+        }
+      }
+
+      Object.keys(modelLevel).forEach(key => {
+
+        if (key === 'Schema_UUID') {
+          // We've already handled this above
+          return
+        }
+
+        if (typeof modelLevel[key] === 'object') {
           // We've found an object so we need to go deeper
           nestingPointer.push(key)
           this.searchForSchemaUUID(modelLevel[key], nestingPointer)
@@ -377,7 +386,7 @@ export default {
       this.newObjectContext = [...val].reverse()
     },
 
-    maybeDeleteObject(val) {
+    maybeDeleteObject (val) {
       console.log(val)
       window.showNotification({
         title: 'Are you sure?',
@@ -390,7 +399,7 @@ export default {
               this.deleteObject(val)
             },
           },
-          {text: 'Cancel', isClose: true}
+          { text: 'Cancel', isClose: true },
         ],
         id: 'f222b117-d9fb-463d-812a-c58f38f89459',
       })
@@ -425,7 +434,7 @@ export default {
       this.groupRerenderTrigger = +new Date()
       this.markDirty('Deleted Object')
       this.updateDynamicSchemaObjects()
-      window.hideNotification({id: 'f222b117-d9fb-463d-812a-c58f38f89459'});
+      window.hideNotification({ id: 'f222b117-d9fb-463d-812a-c58f38f89459' })
     },
 
     /**
@@ -458,10 +467,10 @@ export default {
       let value = reversed.reduce((acc, curr) => acc && acc[curr.key], this.model)
 
       // Get the schema for this metric
-      let metricSchema = val[0].value.allOf[0].properties
-      Object.keys(val[0].value.allOf[1].properties).forEach(index => {
-        metricSchema[index] = val[0].value.allOf[1].properties[index]
-      })
+      let metricSchema = {
+        ...val[0].value.allOf[0].properties,
+        ...val[0].value.allOf[1].properties,
+      }
 
       // If the value is null or undefined then we need to create the model
       if (value === null || value === undefined) {
