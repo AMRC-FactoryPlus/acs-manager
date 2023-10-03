@@ -241,8 +241,10 @@ export default {
           // Get the content of that schema, which will be the object that we need to create
           let schemaToInstantiate = _.cloneDeep(nestedProperty.patternProperties[regexKey])
 
-          console.log('PatternProperties found. Creating', schemaToInstantiate.title, 'called', objectName, 'at',
-              n.join('.'), schemaToInstantiate)
+          this.removePropertiesWithPatternProperties(schemaToInstantiate.properties)
+
+          // console.log('PatternProperties found. Creating', schemaToInstantiate.title, 'called', objectName, 'at',
+          //     n.join('.'), schemaToInstantiate)
 
           // Create the object
           this.set(n.join('.') + '.properties.' + objectName, schemaToInstantiate, this.schema, '.')
@@ -267,6 +269,22 @@ export default {
           nestingPointer.pop()
         }
       })
+    },
+
+    removePropertiesWithPatternProperties (obj) {
+      if (typeof obj !== 'object' || obj === null) {
+        return;
+      }
+
+      if (obj.properties && obj.patternProperties) {
+        delete obj.properties
+      }
+
+      for (const key in obj) {
+        if (key !== 'properties') {
+          this.removePropertiesWithPatternProperties(obj[key])
+        }
+      }
     },
 
     applyMapping (mapping) {
