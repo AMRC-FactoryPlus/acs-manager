@@ -39,6 +39,7 @@ RUN install-php-extensions \
     mbstring \
     pdo \
     pdo_mysql \
+    pdo_pgsql \
     xml \
     pcntl \
     # Add more extensions here if needed \
