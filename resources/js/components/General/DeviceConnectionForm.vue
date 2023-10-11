@@ -309,7 +309,6 @@ export default {
           encoding: 'utf8',
           delimiter: '\r',
           keepAlive: 2000,
-
         },
         RESTConnDetails: {
           baseURL: '',
