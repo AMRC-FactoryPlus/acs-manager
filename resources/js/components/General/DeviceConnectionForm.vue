@@ -1001,10 +1001,11 @@ export default {
               'JSON',
               'XML',
               'Buffer',
+              'ASCII HEX'
             ],
-            default: 'Define by Protocol',
+            default: 'Defined by Protocol',
             showIf: () => {
-              return ['REST', 'UDP', 'MQTT'].includes(this.model.connType) || false;
+              return ['REST', 'UDP', 'MQTT', 'ASCII TCP'].includes(this.model.connType) || false;
             },
             validations: {
               required,
