@@ -299,6 +299,17 @@ export default {
           username: null,
           password: null,
         },
+        OpenProtocolConnDetails: {
+          host: null,
+          port: '4545',
+        },
+        ASCIITCPConnDetails: {
+          ip: null,
+          port: null,
+          encoding: 'utf8',
+          delimiter: '\r',
+          keepAlive: 2000,
+        },
         RESTConnDetails: {
           baseURL: '',
           authMethod: 'None',
@@ -351,6 +362,8 @@ export default {
               'S7',
               'UDP',
               'MTConnect',
+              'Open Protocol',
+              'ASCII TCP'
             ],
           },
           'UDPConnDetails': {
@@ -512,6 +525,130 @@ export default {
                 description: 'The keepalive period for this connection.',
                 title: 'Keep Alive Interval (sec)',
                 default: 60,
+              },
+            },
+          },
+          'OpenProtocolConnDetails': {
+            type: 'object',
+            title: 'Open Protocol Details',
+            properties: {
+              host: {
+                type: 'string',
+                showIf: () => {
+                  return this.model.connType === 'Open Protocol' || false;
+                },
+                validations: {
+                  requiredIf: requiredIf(() => {
+                    return this.model.connType === 'Open Protocol' || false;
+                  }),
+                  minLength: minLength(3),
+                },
+                description: 'The hostname of the controller to connect to.',
+                title: 'Hostname/IP',
+              },
+              port: {
+                type: 'number',
+                description: 'The port number to connect to the controller on.',
+                title: 'Port',
+                showIf: () => {
+                  return this.model.connType === 'Open Protocol' || false;
+                },
+                validations: {
+                  requiredIf: requiredIf(() => {
+                    return this.model.connType === 'Open Protocol' || false;
+                  }),
+                  numeric,
+                },
+                default: 4545,
+              }
+            },
+          },
+          'ASCIITCPConnDetails': {
+            type: 'object',
+            title: 'ASCII TCP Details',
+            properties: {
+              ip: {
+                type: 'string',
+                showIf: () => {
+                  return this.model.connType === 'ASCII TCP' || false;
+                },
+                validations: {
+                  requiredIf: requiredIf(() => {
+                    return this.model.connType === 'ASCII TCP' || false;
+                  }),
+                  minLength: minLength(3),
+                },
+                description: 'The IP of the host to connect to.',
+                title: 'IP',
+              },
+              port: {
+                type: 'number',
+                showIf: () => {
+                  return this.model.connType === 'ASCII TCP' || false;
+                },
+                validations: {
+                  requiredIf: requiredIf(() => {
+                    return this.model.connType === 'ASCII TCP' || false;
+                  }),
+                  minLength: minLength(1),
+                },
+                description: 'The port number to connect to the host on.',
+                title: 'Port',
+              },
+              encoding: {
+                type: 'string',
+                showIf: () => {
+                  return this.model.connType === 'ASCII TCP' || false;
+                },
+                validations: {
+                  requiredIf: requiredIf(() => {
+                    return this.model.connType === 'ASCII TCP' || false;
+                  }),
+                  minLength: minLength(1),
+                },
+                description: 'The encoding to use for the connection.',
+                title: 'Encoding',
+                enum: [
+                  'utf8',
+                  'ascii',
+                  'utf16le',
+                  'ucs2',
+                  'base64',
+                  'latin1',
+                  'binary',
+                  'hex',
+                ],
+                default: 'utf8',
+              },
+              delimiter: {
+                type: 'string',
+                showIf: () => {
+                  return this.model.connType === 'ASCII TCP' || false;
+                },
+                validations: {
+                  requiredIf: requiredIf(() => {
+                    return this.model.connType === 'ASCII TCP' || false;
+                  }),
+                  minLength: minLength(1),
+                },
+                description: 'The delimiter to use for the connection.',
+                title: 'Delimiter',
+                default: '\r',
+              },
+              keepAlive: {
+                type: 'number',
+                showIf: () => {
+                  return this.model.connType === 'ASCII TCP' || false;
+                },
+                validations: {
+                  requiredIf: requiredIf(() => {
+                    return this.model.connType === 'ASCII TCP' || false;
+                  }),
+                  minLength: minLength(1),
+                },
+                description: 'The keepalive period for this connection.',
+                title: 'Keep Alive Interval (ms)',
+                default: 2000,
               },
             },
           },
@@ -863,10 +1000,11 @@ export default {
               'JSON',
               'XML',
               'Buffer',
+              'ASCII HEX'
             ],
-            default: 'Define by Protocol',
+            default: 'Defined by Protocol',
             showIf: () => {
-              return ['REST', 'UDP', 'MQTT'].includes(this.model.connType) || false;
+              return ['REST', 'UDP', 'MQTT', 'ASCII TCP'].includes(this.model.connType) || false;
             },
             validations: {
               required,
