@@ -21,7 +21,7 @@ services:
       - '.:/app'
       - './krb5.conf:/etc/krb5.conf'
       - './k3s.yaml:/k3s.yaml'
-      - '/var/folders/x2/fbgdw81537x75nslf5_vbmkm0000gn/T/tmp.aGOEGwM8:/keytab'
+      - '${KEYTAB_TEMP_FILE}:/keytab'
     networks:
       - sail
   pgsql:

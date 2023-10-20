@@ -5,4 +5,4 @@
 
 # bin/bash
 tmpfile=$(mktemp)
-export KEYTAB_PATH="$(kubectl --kubeconfig ~/.kube/k3s.yaml get -n factory-plus secret manager-keytab -o jsonpath="{.data.client-keytab}" | base64 -d >"$tmpfile" && echo "$tmpfile")"
+echo kubectl --kubeconfig ~/.kube/k3s.yaml get -n factory-plus secret manager-keytab -o jsonpath="{.data.client-keytab}" | base64 -d >"$tmpfile" && echo "$tmpfile"
