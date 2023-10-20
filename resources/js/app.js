@@ -72,8 +72,8 @@ window.showResponseSuccess = (payload) => {
 window.showResponseFailed = (payload) => {
   window.events.$emit('showResponseFailed', payload);
 };
-window.showResponseError = (payload) => {
-  window.events.$emit('showResponseError');
+window.showResponseError = (e) => {
+  window.events.$emit('showResponseError', e);
 };
 
 window.hideNotification = (payload) => {
@@ -108,9 +108,9 @@ Vue.mixin({
       if (error && error.response && error.response.status === 401) {
         this.goto_url('/login');
       }
-
+      
       if (error && error.response && error.response.status >= 500) {
-        window.showResponseError();
+        window.showResponseError(error?.response?.data?.message);
       } else if (error.response && error.response.data && 'message' in error.response.data) {
         window.showResponseFailed({
           id: notificationId,

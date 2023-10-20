@@ -86,7 +86,6 @@ class CreateNodeAction
         if (!in_array(config('app.env'), ['local', 'testing']) || env('K8S_DEPLOY_WHEN_LOCAL', false)) {
 
             if (in_array(config('app.env'), ['local', 'testing']) && env('K8S_DEPLOY_WHEN_LOCAL', false)) {
-                ray('Using local K8s config file');
                 $cluster = KubernetesCluster::fromKubeConfigYamlFile(
                     env('LOCAL_KUBECONFIG'),
                     'default'
@@ -169,7 +168,6 @@ class CreateNodeAction
             // Auth & ConfigDB |
             //-----------------|
 
-
             // Create an entry in the ConfigDB to describe this node using the Cell gateway (00da3c0b-f62b-4761-a689-39ad0c33f864)
             // or Soft gateway (5bee4d24-32e1-44f8-b953-1f86ff4b3e87) class
             (new MakeConsumptionFrameworkRequest)->execute(
@@ -181,6 +179,7 @@ class CreateNodeAction
                     'class' => $isCellGateway ? '00da3c0b-f62b-4761-a689-39ad0c33f864' : '5bee4d24-32e1-44f8-b953-1f86ff4b3e87',
                 ]
             );
+
 
             // Create entry in the ConfigDB for the General object information Application (64a8bfa9-7772-45c4-9d1a-9e6290690957)
             (new MakeConsumptionFrameworkRequest)->execute(

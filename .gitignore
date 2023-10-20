@@ -43,6 +43,7 @@ yarn-error.log
 /.idea/
 /certs/
 k3s.yaml
+krb5.conf
 /public/build/
 client-keytab
 client-keytab-enc
