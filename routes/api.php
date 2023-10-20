@@ -70,6 +70,7 @@ Route::middleware('auth:api')->post('/groups/{group}/nodes/{node}/connections', 
 Route::middleware('auth:api')->get('/groups/{group}/nodes/{node}/connections/{connection}', [DeviceConnectionController::class, 'show']);
 Route::middleware('auth:api')->patch('/groups/{group}/nodes/{node}/connections/{connection}', [DeviceConnectionController::class, 'update']);
 Route::middleware('auth:api')->post('/groups/{group}/nodes/{node}/connections/{connection}/use', [DeviceConnectionController::class, 'use']);
+Route::middleware('auth:api')->delete('/groups/{group}/nodes/{node}', [NodeController::class, 'destroy']);
 
 // ------ Devices ------ //
 Route::middleware('auth:api')->get('/groups/{group}/nodes/{node}/devices', [DeviceController::class, 'index']);
