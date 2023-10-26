@@ -60,7 +60,6 @@ jobs:
           context: .
           push: true
           file: ./.docker/Dockerfiles/frontend/Dockerfile.frontend
-          load: true
           tags: ${{ steps.meta.outputs.tags }}-frontend
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=docker,dest=/tmp/image.tar
@@ -178,4 +177,4 @@ jobs:
         run: |
           docker load --input /tmp/image.tar
           docker image ls -a
-          docker push ${{ steps.meta.outputs.tags }}
+          docker push ${{ steps.meta.outputs.tags }}-backend
