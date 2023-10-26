@@ -82,7 +82,7 @@ jobs:
           file: ./.docker/Dockerfiles/Dockerfile.backend-base
           push: true
           tags: ghcr.io/amrc-factoryplus/acs-manager:prod-base-php82-1.0.6
-
+          
       - name: Build Backend
         id: build-backend
         uses: docker/build-push-action@v4
