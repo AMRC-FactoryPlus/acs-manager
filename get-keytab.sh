@@ -4,5 +4,4 @@
 #
 
 # bin/bash
-tmpfile=$(mktemp)
-echo kubectl --kubeconfig ~/.kube/k3s.yaml get -n factory-plus secret manager-keytab -o jsonpath="{.data.client-keytab}" | base64 -d >"$tmpfile" && echo "$tmpfile"
+kubectl --kubeconfig ./k3s.yaml get -n factory-plus secret manager-keytab -o jsonpath="{.data.client-keytab}" | base64 -d >"./keytab"

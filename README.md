@@ -24,7 +24,7 @@ The ACS Manager is based on Laravel 9 and VueJS 2, and therefore a local PHP env
 - Set the `AUTH_SERVICE_URL`, `CONFIGDB_SERVICE_URL`, `FILE_SERVICE_ENDPOINT` and `CMDESC_SERVICE_ENDPOINT` values in `.env` to values for your environment
 - Run `composer install` to install all PHP dependencies
 - Run `php artisan key:generate` to set the application key and copy the new `APP_KEY` value from `.env` to `.env.testing`
-- Edit and run `./get-keytab.sh` to generate a keytab file for the application to use for authentication. Set the `KEYTAB_TEMP_FILE` environment variable in `.env` to the output of this script
+- Run `./get-keytab.sh` to generate a keytab file for the application to use for authentication
 - Run `php artisan passport:keys` to create the encryption keys for API authentication 
 - Run `yarn` to install frontend dependencies 
 - Run `yarn dev` to launch the frontend server 
