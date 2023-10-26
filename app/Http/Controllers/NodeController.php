@@ -50,8 +50,6 @@ class NodeController extends Controller
     public function destroy()
     {
 
-        ray(request()->route('node'));
-
         // Get the device
         $node = Node::where('id', request()->route('node'))->first();
         if (! $node) {
@@ -59,8 +57,6 @@ class NodeController extends Controller
                 'The node does not exist.', 404
             );
         }
-
-        ray($node);
 
         return process_action((new DeleteNodeAction())->execute($node));
 

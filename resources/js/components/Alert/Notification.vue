@@ -66,6 +66,7 @@ export default {
       } else {
         uuid = payload.id;
       }
+
       let content = {
         component: Alert,
         props: {
@@ -197,7 +198,12 @@ export default {
 
     showResponseError (e) {
 
-      let uuid = uuidv4();
+      let uuid = null;
+      if (!e.id) {
+        uuid = uuidv4();
+      } else {
+        uuid = e.id;
+      }
 
       let content = {
         component: Alert,

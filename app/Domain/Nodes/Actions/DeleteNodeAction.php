@@ -36,7 +36,7 @@ class DeleteNodeAction
     {
         // Check that the node has no devices
         if ($node->devices->count() > 0) {
-            throw new ActionFailException('You cannot delete a node that has devices.');
+            throw new ActionFailException('You cannot delete a node that has devices. Delete all devices from the node first and try again.');
         }
     }
 
@@ -91,33 +91,9 @@ class DeleteNodeAction
         // Auth & ConfigDB |
         //-----------------|
 
-        // ! This is failing with 405. Clarify with Ben the correct endpoint to use.
-
-        // Remove the entry in the ConfigDB that describes this node
-        // DELETE /v1/app/{Application_UUID}/object/{object_uuid}
-        (new MakeConsumptionFrameworkRequest)->execute(
-            type: 'delete',
-            service: 'configdb',
-            url: config('manager.configdb_service_url') . '/v1/app/cb40bed5-49ad-4443-a7f5-08c75009da8f/object/' . $nodeUuid,
-        );
-
-        // Remove the entry in the ConfigDB for the General object information Application (64a8bfa9-7772-45c4-9d1a-9e6290690957)
-        (new MakeConsumptionFrameworkRequest)->execute(
-            type: 'delete',
-            service: 'configdb',
-            url: config(
-                'manager.configdb_service_url'
-            ) . '/v1/app/64a8bfa9-7772-45c4-9d1a-9e6290690957/object/' . $nodeUuid,
-        );
-
-        // Remove the entry in the ConfigDB for the Sparkplug address information (8e32801b-f35a-4cbf-a5c3-2af64d3debd7) Application
-        (new MakeConsumptionFrameworkRequest)->execute(
-            type: 'delete',
-            service: 'configdb',
-            url: config(
-                'manager.configdb_service_url'
-            ) . '/v1/app/8e32801b-f35a-4cbf-a5c3-2af64d3debd7/object/' . $nodeUuid
-        );
+        // It should be noted that no removals are made from the ConfigDB when deleting objects. This
+        // is intentional so that UUIDS can be looked-up for traceability purposes and to ensure that
+        // UUIDs are not reused.
 
         // Remove the entry in the Auth service that maps the Kerberos principal to the node UUID
         (new MakeConsumptionFrameworkRequest)->execute(
