@@ -72,6 +72,7 @@ jobs:
         id: check-backend-base
         run: |          
           docker manifest inspect ghcr.io/amrc-factoryplus/acs-manager:prod-base-php82-1.0.5 || echo "needs-build=true" >> $GITHUB_OUTPUT
+          echo $GITHUB_OUTPUT
 
       - name: Build Backend Base
         id: build-backend-base
