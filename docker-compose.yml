@@ -2,7 +2,9 @@
 version: '3'
 services:
   backend:
-    image: backend
+    image: ghcr.io/amrc-factoryplus/acs-manager:main-backend
+    ports:
+      - '9000:9000'
     user: www-data
     volumes:
       - './krb5.conf:/etc/krb5.conf'
@@ -12,7 +14,7 @@ services:
     networks:
       - sail
   frontend:
-    image: frontend
+    image: ghcr.io/amrc-factoryplus/acs-manager:main-frontend
     volumes:
       - '.docker/app/nginx.conf.dev:/etc/nginx/nginx.conf'
       - '.:/app'

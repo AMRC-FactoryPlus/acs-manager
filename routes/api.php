@@ -13,6 +13,7 @@ use App\Http\Controllers\DeviceSchemaController;
 use App\Http\Controllers\DeviceSchemaVersionController;
 use App\Http\Controllers\EdgeAgentConfigurationController;
 use App\Http\Controllers\EdgeAgentController;
+use App\Http\Controllers\EdgeClusterController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\NodeController;
 use App\Http\Controllers\NodeUserController;
@@ -87,8 +88,11 @@ Route::middleware('auth:api')->get('/devices/{device}/files/{file}/download', [D
 Route::middleware('auth:api')->post('/devices/{device}/files', [DeviceFileController::class, 'store']);
 Route::middleware('auth:api')->get('/devices/{device}/available-file-types', [DeviceFileController::class, 'available']);
 
-// ------ Schemas ------ //
+// ------ Clusters ------ //
 Route::middleware('auth:api')->get('/clusters', [ClusterController::class, 'index']);
+
+// ------ Edge Clusters ------ //
+Route::middleware('auth:api')->get('/edge-clusters', [EdgeClusterController::class, 'index']);
 
 // ------ Schemas ------ //
 Route::middleware('auth:api')->get('/device-schemas', [DeviceSchemaController::class, 'index']);
