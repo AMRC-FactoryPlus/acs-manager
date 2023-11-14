@@ -40,7 +40,7 @@
         </div>
       </template>
     </ColumnList>
-    <new-group-overlay :show="newGroupDialogVisible" :clusters="clusters"
+    <new-group-overlay :show="newGroupDialogVisible"
                        @close="() => {newGroupDialogVisible = false;}"
                        @completed="newGroupCreated"></new-group-overlay>
 
