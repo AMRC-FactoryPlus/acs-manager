@@ -99,9 +99,6 @@ Route::middleware('auth:api')->get('/device-schemas', [DeviceSchemaController::c
 //Route::middleware('auth:api')->post('/device-schemas', [DeviceSchemaController::class, 'create']);
 Route::middleware('auth:api')->get('/device-schemas/{schema}/versions', [DeviceSchemaVersionController::class, 'index']);
 
-// ------ Edge Agent Config ------ //
-Route::post('edge-agent-config', [EdgeAgentConfigurationController::class, 'show']);
-
 // ------ Edge Agents ------ //
 Route::middleware('auth:api')->get('/edge-agents', [EdgeAgentController::class, 'index']);
 Route::middleware('auth:api')->post('/edge-agents', [EdgeAgentController::class, 'updateAll']);

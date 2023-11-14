@@ -178,6 +178,7 @@ class UpdateEdgeAgentConfigurationForNodeAction
         // Get all devices for this node that have an active origin map and an active device config and build the edge agent config
         $config = json_decode(json_encode($config, JSON_THROW_ON_ERROR), false, 512, JSON_THROW_ON_ERROR);
 
+
         if (count($config->deviceConnections) < 1) {
             return action_success();
         }
@@ -222,30 +223,14 @@ class UpdateEdgeAgentConfigurationForNodeAction
             throw new ActionFailException('Failed to validate Edge Agent configuration.');
         }
 
-        // Generate a unique filename for the config
-        $filename = uniqid('', true) . '.json';
-        \Storage::disk('edge-agent-configs')
-                ->put($filename, json_encode($config, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));
 
-        EdgeAgentConfiguration::create(
-            [
-                'node_id' => $node->id,
-                'file' => $filename,
-            ]
+        // Add an entry in the Config Store store the config
+        (new MakeConsumptionFrameworkRequest)->execute(
+            type: 'put',
+            service: 'configdb',
+            url: config('manager.configdb_service_url') . '/v1/app/aac6f843-cfee-4683-b121-6943bfdf9173/object/' . $node->uuid,
+            payload: $config
         );
-
-        if (! in_array(config('app.env'), ['local', 'testing'])) {
-            // Ask the edge agent to reload the config
-            (new MakeConsumptionFrameworkRequest)->execute(
-                type: 'post',
-                service: 'cmdesc',
-                url: config('manager.cmdesc_service_url') . '/v1/address/' . $node->group->name . '/' . $node->node_id,
-                payload: [
-                    'name' => 'Node Control/Reload Edge Agent Config',
-                    'value' => true,
-                ]
-            );
-        }
 
         return action_success();
     }

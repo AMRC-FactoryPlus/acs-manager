@@ -88,17 +88,6 @@ return [
             'region' => 'us-east-1',
             'bucket' => 'device-connections',
         ],
-
-        'edge-agent-configs' => [
-            'driver' => 's3',
-            'endpoint' => env('MINIO_ENDPOINT', 'http://127.0.0.1:9000'),
-            'use_path_style_endpoint' => true,
-            'key' => env('MINIO_KEY'),
-            'secret' => env('MINIO_SECRET'),
-            'region' => 'us-east-1',
-            'bucket' => 'edge-agent-configs',
-        ],
-
     ],
 
     /*

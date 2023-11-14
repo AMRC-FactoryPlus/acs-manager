@@ -53,15 +53,6 @@ class CreateNodeAction
         // Perform the Action
         // ===================
 
-        $node = Node::create([
-            'node_id' => $nodeName,
-            'k8s_hostname' => $destinationCluster . '/' . $destinationNode,
-            'principal' => $nodeName . '/' . $destinationCluster . '/' . $destinationNode,
-            'group_id' => $group->id,
-            'is_admin' => 0,
-            'is_valid' => true,
-        ]);
-
         // Create the object in the ConfigDB
         $uuid = json_decode(
             (new MakeConsumptionFrameworkRequest)->execute(
@@ -73,6 +64,16 @@ class CreateNodeAction
             )['data']->body()
         )->uuid;
 
+        $node = Node::create([
+            'node_id' => $nodeName,
+            'k8s_hostname' => $destinationCluster . '/' . $destinationNode,
+            'principal' => $nodeName . '/' . $destinationCluster . '/' . $destinationNode,
+            'group_id' => $group->id,
+            'is_admin' => 0,
+            'is_valid' => true,
+            'uuid' => $uuid,
+        ]);
+
         // Create a General Object Information entry
         (new MakeConsumptionFrameworkRequest)->execute(
             type: 'put',
@@ -83,18 +84,17 @@ class CreateNodeAction
             ]
         );
 
-        ray($uuid);
-
         // Add an entry in the Config Store to allow the EDO to provision the node
         (new MakeConsumptionFrameworkRequest)->execute(
-            type: 'put', service: 'configdb', url: config(
-                'manager.configdb_service_url'
-            ) . '/v1/app/f2b9417a-ef7f-421f-b387-bb8183a48cdb/object/' . $uuid, payload: [
-            "name" => $nodeName,
-            "charts" => ["edge-agent"],
-            "cluster" => $destinationCluster,
-            "hostname" => $destinationNode,
-        ]
+            type: 'put',
+            service: 'configdb',
+            url: config('manager.configdb_service_url') . '/v1/app/f2b9417a-ef7f-421f-b387-bb8183a48cdb/object/' . $uuid,
+            payload: [
+                "name" => $nodeName,
+                "charts" => ["edge-agent"],
+                "cluster" => $destinationCluster,
+                "hostname" => $destinationNode,
+            ]
         );
 
 
