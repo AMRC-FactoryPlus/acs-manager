@@ -6,6 +6,8 @@
 
 namespace App\Support\Providers;
 
+use AMRCFactoryPlus\Utilities\ServiceClient;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -17,7 +19,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->singletonIf(ServiceClient::class, function (Application $app) {
+            return (new ServiceClient())
+                ->setBaseUrl(config('manager.base_url'))
+                ->setRealm(config('manager.realm'))
+                ->setLogger($app->make('log'))
+                ->setScheme('http')
+                ->setCache($app->make('cache.store'))
+                ->setPrincipal('sv1manager')
+                ->setKeytabPath(config('manager.keytab_path'));
+        });
     }
 
     /**

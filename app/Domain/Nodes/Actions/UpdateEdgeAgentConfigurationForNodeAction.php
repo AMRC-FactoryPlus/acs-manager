@@ -51,12 +51,7 @@ class UpdateEdgeAgentConfigurationForNodeAction
         $config = [
             '$schema' => 'https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/Edge_Agent_Config.json',
             'sparkplug' => [
-                'serverUrl' => config('manager.mqtt_server_from_edge'),
-                'groupId' => $node->group->name,
-                'edgeNode' => $node->node_id,
-                'username' => $node->principal,
-                'password' => '__mqtt-password__', // This is replaced with the keytab at the edge
-                'asyncPubMode' => true,
+                'deprecated' => 'This is no longer required in V3. It has been kept to prevent too many moving parts from being changed in one go',
             ],
             'deviceConnections' => [],
         ];

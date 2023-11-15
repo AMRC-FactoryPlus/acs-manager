@@ -6,8 +6,10 @@
 
 namespace App\Domain\EdgeClusters\Actions;
 
-use App\Domain\Support\Actions\MakeConsumptionFrameworkRequest;
+use AMRCFactoryPlus\Utilities\ServiceClient;
 use App\Exceptions\ActionForbiddenException;
+use AMRCFactoryPlus\Utilities\ServiceClient\UUIDs\App;
+
 use function func_get_args;
 
 class GetEdgeClustersAction
@@ -30,30 +32,27 @@ class GetEdgeClustersAction
 
     public function execute()
     {
-
         // Validate and authorise the request
         $this->authorise(...func_get_args());
         $this->validate(...func_get_args());
 
-        // First get all of the edge clusters
-        $response = (new MakeConsumptionFrameworkRequest)->execute(type: 'get', service: 'configdb', url: config('manager.configdb_service_url') . '/v1/app/747a62c9-1b66-4a2e-8dd9-0b70a91b6b75/object',)['data'];
-
-        $edgeClusters = json_decode($response->body());
+        $fplus = resolve(ServiceClient::class);
+        $configDB = $fplus->getConfigDB();
+        $edgeClusters = $configDB->getConfig(App::EdgeClusterStatus);
 
         $clusters = [];
 
         // Iterate through the edge clusters
         foreach ($edgeClusters as $cluster) {
             // Then hit the general object information endpoint for each cluster to get its name
-            $clusterName = (new MakeConsumptionFrameworkRequest)->execute(type: 'get', service: 'configdb', url: config('manager.configdb_service_url') . '/v1/app/64a8bfa9-7772-45c4-9d1a-9e6290690957/object/' . $cluster,)['data'];
+            $clusterName = $configDB->getConfig(App::Info, $cluster)['name'];
             // Then hit the edge cluster status endpoint for each cluster to get its status and nodes
-            $clusterResponse = (new MakeConsumptionFrameworkRequest)->execute(type: 'get', service: 'configdb', url: config('manager.configdb_service_url') . '/v1/app/747a62c9-1b66-4a2e-8dd9-0b70a91b6b75/object/' . $cluster,)['data'];
+            $clusterResponse = $configDB->getConfig(App::EdgeClusterStatus, $cluster);
 
-            $clusters[$clusterName['name']] = [
+            $clusters[$clusterName] = [
                 'uuid' => $cluster,
-                'nodes' => json_decode($clusterResponse->body())->hosts,
-                ];
-
+                'nodes' => $clusterResponse['hosts'],
+            ];
         }
 
         return action_success($clusters);
