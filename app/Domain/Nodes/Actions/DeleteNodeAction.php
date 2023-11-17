@@ -6,15 +6,13 @@
 
 namespace App\Domain\Nodes\Actions;
 
-use App\Domain\Helpers\Actions\BuildKerberosCRDNameAction;
-use App\Domain\Helpers\Actions\BuildKerberosPrincipalAction;
-use App\Domain\Nodes\CRDs\KerberosKey;
+use AMRCFactoryPlus\Utilities\ServiceClient;
+use AMRCFactoryPlus\Utilities\ServiceClient\ServiceClientException;
+use AMRCFactoryPlus\Utilities\ServiceClient\UUIDs\App;
 use App\Domain\Nodes\Models\Node;
-use App\Domain\Support\Actions\MakeConsumptionFrameworkRequest;
 use App\Exceptions\ActionFailException;
 use App\Exceptions\ActionForbiddenException;
 use Illuminate\Support\Facades\Log;
-use RenokiCo\LaravelK8s\KubernetesCluster;
 use function func_get_args;
 
 class DeleteNodeAction
@@ -40,6 +38,11 @@ class DeleteNodeAction
         }
     }
 
+    /**
+     * @throws ActionForbiddenException
+     * @throws ActionFailException
+     * @throws ServiceClientException
+     */
     public function execute(Node $node)
     {
 
@@ -47,12 +50,10 @@ class DeleteNodeAction
         $this->authorise(...func_get_args());
         $this->validate(...func_get_args());
 
-        // Add an entry in the Config Store to allow the EDO to provision the node
-        (new MakeConsumptionFrameworkRequest)->execute(
-            type: 'delete',
-            service: 'configdb',
-            url: config('manager.configdb_service_url') . '/v1/app/f2b9417a-ef7f-421f-b387-bb8183a48cdb/object/' . $node->uuid,
-        );
+        $fplus = resolve(ServiceClient::class);
+        $configDB = $fplus->getConfigDB();
+
+        $configDB->deleteConfig(App::EdgeAgentDeployment, $node->uuid);
 
         $node->delete();
 

@@ -91,8 +91,3 @@ Route::middleware('auth:api')->get('/edge-clusters', [EdgeClusterController::cla
 Route::middleware('auth:api')->get('/device-schemas', [DeviceSchemaController::class, 'index']);
 //Route::middleware('auth:api')->post('/device-schemas', [DeviceSchemaController::class, 'create']);
 Route::middleware('auth:api')->get('/device-schemas/{schema}/versions', [DeviceSchemaVersionController::class, 'index']);
-
-// ------ Edge Agents ------ //
-Route::middleware('auth:api')->get('/edge-agents', [EdgeAgentController::class, 'index']);
-Route::middleware('auth:api')->post('/edge-agents', [EdgeAgentController::class, 'updateAll']);
-Route::middleware('auth:api')->post('/edge-agents/{namespace}/{name}', [EdgeAgentController::class, 'update']);

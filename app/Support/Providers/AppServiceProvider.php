@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
                 ->setBaseUrl(config('manager.base_url'))
                 ->setRealm(config('manager.realm'))
                 ->setLogger($app->make('log'))
-                ->setScheme('http')
+                ->setScheme(config('manager.scheme'))
                 ->setCache($app->make('cache.store'))
                 ->setPrincipal('sv1manager')
                 ->setKeytabPath(config('manager.keytab_path'));

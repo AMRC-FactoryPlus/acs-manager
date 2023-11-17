@@ -32,7 +32,6 @@
         "meilisearch/meilisearch-php": "^v0.26.0",
         "opis/json-schema": "^2.3",
         "pusher/pusher-php-server": "^5.0",
-        "renoki-co/laravel-php-k8s": "^3.4",
         "sentry/sentry-laravel": "^2.13",
         "shalvah/laravel-jsend": "^2.3",
         "spatie/laravel-query-builder": "^5.0.3",

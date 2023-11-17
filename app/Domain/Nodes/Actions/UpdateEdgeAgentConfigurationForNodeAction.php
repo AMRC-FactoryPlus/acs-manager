@@ -6,14 +6,15 @@
 
 namespace App\Domain\Nodes\Actions;
 
-use App\Domain\Devices\Models\Device;
+use AMRCFactoryPlus\Utilities\ServiceClient;
+use AMRCFactoryPlus\Utilities\ServiceClient\ServiceClientException;
+use AMRCFactoryPlus\Utilities\ServiceClient\UUIDs\App;
 use App\Domain\Nodes\Models\Node;
-use App\Domain\Support\Actions\MakeConsumptionFrameworkRequest;
-use App\EdgeAgentConfiguration;
 use App\Exceptions\ActionFailException;
 use App\Exceptions\ActionForbiddenException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use JsonException;
 use Opis\JsonSchema\Errors\ErrorFormatter;
 use Opis\JsonSchema\Errors\ValidationError;
 use Opis\JsonSchema\Validator;
@@ -25,8 +26,13 @@ class UpdateEdgeAgentConfigurationForNodeAction
     /**
      * This action creates a EdgeAgentConfiguration for the supplied node, uploads it to storage and sets the `configuration_file` on
      * the node. The device must have an active connection and an active configuration otherwise this doesn't run.
-     **/
-    public function execute(Node $node)
+     *
+     * @throws ServiceClientException
+     * @throws ActionFailException
+     * @throws JsonException
+     * @throws ActionForbiddenException
+     */
+    public function execute(Node $node): array
     {
         // =========================
         // Validate User Permissions
@@ -51,7 +57,13 @@ class UpdateEdgeAgentConfigurationForNodeAction
         $config = [
             '$schema' => 'https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/Edge_Agent_Config.json',
             'sparkplug' => [
-                'deprecated' => 'This is no longer required in V3. It has been kept to prevent too many moving parts from being changed in one go',
+                'DEPRECATED' => 'This is no longer required in V3. It has been kept to prevent too many moving parts from being changed in one go.',
+                'serverUrl' => 'DEPRECATED',
+                'groupId' => 'DEPRECATED',
+                'edgeNode' => 'DEPRECATED',
+                'username' => 'DEPRECATED',
+                'password' => 'DEPRECATED',
+                'asyncPubMode' => true,
             ],
             'deviceConnections' => [],
         ];
@@ -116,7 +128,7 @@ class UpdateEdgeAgentConfigurationForNodeAction
 
                     if (is_array($v) && array_key_exists('Sparkplug_Type', $v)) {
                         // If we have an array that contains a metric then extract it and only include properties that are not null to keep the size down
-                        $tags[] = (object) array_filter(
+                        $tags[] = array_filter(
                             [
                                 'Name' => implode('/', $path),
                                 'type' => $v['Sparkplug_Type'],
@@ -219,12 +231,13 @@ class UpdateEdgeAgentConfigurationForNodeAction
         }
 
 
-        // Add an entry in the Config Store store the config
-        (new MakeConsumptionFrameworkRequest)->execute(
-            type: 'put',
-            service: 'configdb',
-            url: config('manager.configdb_service_url') . '/v1/app/aac6f843-cfee-4683-b121-6943bfdf9173/object/' . $node->uuid,
-            payload: $config
+        $fplus = resolve(ServiceClient::class);
+        $configDB = $fplus->getConfigDB();
+
+        $configDB->putConfig(
+            App::EdgeAgentConfig,
+            $node->uuid,
+            $config
         );
 
         return action_success();

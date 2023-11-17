@@ -67,6 +67,7 @@ return [
             'secret' => env('MINIO_SECRET'),
             'region' => 'us-east-1',
             'bucket' => 'schemas',
+            'throw' => true,
         ],
 
         'device-configurations' => [
@@ -77,6 +78,7 @@ return [
             'secret' => env('MINIO_SECRET'),
             'region' => 'us-east-1',
             'bucket' => 'device-configurations',
+            'throw' => true,
         ],
 
         'device-connections' => [
@@ -87,6 +89,7 @@ return [
             'secret' => env('MINIO_SECRET'),
             'region' => 'us-east-1',
             'bucket' => 'device-connections',
+            'throw' => true,
         ],
     ],
 
