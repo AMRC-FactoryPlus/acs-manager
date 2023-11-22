@@ -11,6 +11,7 @@ return [
     'realm' => env('REALM', ''),
     'scheme' => env('SERVICE_SCHEME', 'https'),
     'manager_service_principal' => env('MANAGER_SERVICE_PRINCIPAL', ''),
+    'manager_client_principal' => env('MANAGER_CLIENT_PRINCIPAL', 'sv1manager'),
     'tgt_lifetime' => 3600,
     'keytab_path' => env('KEYTAB_PATH', '/config/keytab/client-keytab'),
 ];

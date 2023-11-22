@@ -6,9 +6,9 @@
 
 namespace App\Domain\EdgeClusters\Actions;
 
-use AMRCFactoryPlus\Utilities\ServiceClient;
+use AMRCFactoryPlus\ServiceClient;
 use App\Exceptions\ActionForbiddenException;
-use AMRCFactoryPlus\Utilities\ServiceClient\UUIDs\App;
+use AMRCFactoryPlus\UUIDs\App;
 
 use function func_get_args;
 

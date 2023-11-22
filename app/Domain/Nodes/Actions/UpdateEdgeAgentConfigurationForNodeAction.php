@@ -6,9 +6,9 @@
 
 namespace App\Domain\Nodes\Actions;
 
-use AMRCFactoryPlus\Utilities\ServiceClient;
-use AMRCFactoryPlus\Utilities\ServiceClient\ServiceClientException;
-use AMRCFactoryPlus\Utilities\ServiceClient\UUIDs\App;
+use AMRCFactoryPlus\ServiceClient;
+use AMRCFactoryPlus\Exceptions\ServiceClientException;
+use AMRCFactoryPlus\UUIDs\App;
 use App\Domain\Nodes\Models\Node;
 use App\Exceptions\ActionFailException;
 use App\Exceptions\ActionForbiddenException;

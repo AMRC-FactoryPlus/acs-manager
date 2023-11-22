@@ -11,7 +11,6 @@ services:
       - './k3s.yaml:/k3s.yaml'
       - './keytab:/keytab'
       - '.:/app'
-      - '/Users/alexgodbehere/fplus-migrate/php-utilities:/app/vendor/amrc-factoryplus/utilities'
     networks:
       - sail
   frontend:

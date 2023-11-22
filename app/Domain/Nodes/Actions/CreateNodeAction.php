@@ -6,9 +6,10 @@
 
 namespace App\Domain\Nodes\Actions;
 
-use AMRCFactoryPlus\Utilities\ServiceClient;
-use AMRCFactoryPlus\Utilities\ServiceClient\ServiceClientException;
-use AMRCFactoryPlus\Utilities\ServiceClient\UUIDs\App;
+use AMRCFactoryPlus\ServiceClient;
+use AMRCFactoryPlus\Exceptions\ServiceClientException;
+use AMRCFactoryPlus\UUIDs\App;
+use AMRCFactoryPlus\UUIDs\Klass;
 use App\Domain\Groups\Models\Group;
 use App\Domain\Nodes\Models\Node;
 use App\Exceptions\ActionFailException;
@@ -54,7 +55,7 @@ class CreateNodeAction
         $configDB = $fplus->getConfigDB();
 
         // Create the object in the ConfigDB
-        $uuid = $configDB->createObject(ServiceClient\UUIDs\Klass::CellGateway)['uuid'];
+        $uuid = $configDB->createObject(Klass::CellGateway)['uuid'];
 
         $node = Node::create([
             'node_id' => $nodeName,

@@ -6,7 +6,7 @@
 
 namespace App\Support\Providers;
 
-use AMRCFactoryPlus\Utilities\ServiceClient;
+use AMRCFactoryPlus\ServiceClient;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
@@ -26,7 +26,7 @@ class AppServiceProvider extends ServiceProvider
                 ->setLogger($app->make('log'))
                 ->setScheme(config('manager.scheme'))
                 ->setCache($app->make('cache.store'))
-                ->setPrincipal('sv1manager')
+                ->setPrincipal(config('manager.manager_client_principal'))
                 ->setKeytabPath(config('manager.keytab_path'));
         });
     }
