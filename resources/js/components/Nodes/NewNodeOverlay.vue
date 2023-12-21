@@ -68,7 +68,7 @@ export default {
               value: edgeCluster,
               options: config.hosts.map(host => {
                 return {
-                  title: host.hostname,
+                  title: `${host.hostname} (${host.arch})`,
                   value: host.hostname,
                   action: () => {
                     params.destination_cluster.data = config.uuid;
