@@ -24,7 +24,7 @@
             <div class="flex items-center justify-center gap-0">
             </div>
           </div>
-          <div v-if="item.status" class="flex items-center text-gray-400 text-xs">{{item.status?.nodes.length}} Nodes
+          <div v-if="item.status" class="flex items-center text-gray-400 text-xs">{{item.status?.hosts?.length}} Nodes
           </div>
           <div v-else class="flex items-center text-gray-400 animate-pulse text-xs tracking-wider font-normal gap-1">
             <div class="flex items-center justify-center">

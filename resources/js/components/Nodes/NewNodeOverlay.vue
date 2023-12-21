@@ -64,14 +64,14 @@ export default {
             return {
               title: edgeCluster,
               value: edgeCluster,
-              options: Object.keys(val[edgeCluster].nodes).map(e => {
+              options: Object.keys(val[edgeCluster].hosts).map(e => {
                 return {
-                  title: val[edgeCluster].nodes[e].hostname,
-                  value: val[edgeCluster].nodes[e].hostname,
+                  title: val[edgeCluster].hosts[e].hostname,
+                  value: val[edgeCluster].hosts[e].hostname,
                   action: () => {
                     this.steps.__request.parameters.destination_cluster.data = val[edgeCluster].uuid
-                    this.steps.__request.parameters.destination_node.data = val[edgeCluster].nodes[e].hostname
-                    this.steps.nodeSelection.controls.destination_node.value = val[edgeCluster].nodes[e].hostname
+                    this.steps.__request.parameters.destination_node.data = val[edgeCluster].hosts[e].hostname
+                    this.steps.nodeSelection.controls.destination_node.value = val[edgeCluster].hosts[e].hostname
                   },
                 }
               })
