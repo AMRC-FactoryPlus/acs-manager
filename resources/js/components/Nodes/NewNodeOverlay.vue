@@ -66,7 +66,7 @@ export default {
             return {
               title: edgeCluster,
               value: edgeCluster,
-              options: config.hosts.map(host => {
+              options: config.status.hosts.map(host => {
                 return {
                   title: `${host.hostname} (${host.arch})`,
                   value: host.hostname,
