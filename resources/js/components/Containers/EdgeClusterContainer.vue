@@ -70,7 +70,7 @@ export default {
     },
 
     copyBootstrapCommand (item) {
-      axios.get(`/api/edge-clusters/${item.name}/bootstrap-command`).then((response) => {
+      axios.get(`/api/edge-clusters/${item.uuid}/bootstrap-command`).then((response) => {
         if (response.data.data) {
           this.copyToClipboard(response.data.data);
           window.showNotification({
@@ -92,6 +92,7 @@ export default {
       try {
         await navigator.clipboard.writeText(text);
       } catch (err) {
+        console.log(`Failed to copy to clipboard: ${text}`);
         window.showNotification({
           title: 'Failed to copy to clipboard.',
           description: err,
