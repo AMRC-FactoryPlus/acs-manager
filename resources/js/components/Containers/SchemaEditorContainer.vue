@@ -113,10 +113,6 @@ export default {
     create (e) {
       let uuid = uuidv4()
 
-      console.log(e)
-
-      // * Get parent from UUID and put in the properties of that, not the this.schema.properties
-
       const parent = this.getParentFromUUID(e.parent, this.schema)
       const targetPointer = parent?.properties ?? this.schema.properties
 
@@ -159,20 +155,36 @@ export default {
       // selectedFolder
     },
 
+    getParentOfObjectContainingUUID (uuid, schema) {
+      // Iterate through each key-value pair in the object
+      for (const [key, testParent] of Object.entries(schema)) {
+        // Check if value is an object and not null
+        if (typeof testParent === 'object' && testParent !== null) {
+          // Check if this object contains the uuid
+          if (testParent.uuid === uuid) {
+            // Return parent, grandparent, and key in grandparent
+            return { parent: testParent, grandparent: schema, keyInGrandparent: key }
+          }
+
+          // Recursively search in this object
+          const result = this.getParentOfObjectContainingUUID(uuid, testParent)
+          if (result) return result
+        }
+      }
+
+      // If no matching uuid is found, return null
+      return null
+    },
+
     renameSelected (name) {
-      // Rename the key in this.schema.properties to the new name
-      let oldName = this.selected.payload.name
+      let { grandparent, keyInGrandparent } = this.getParentOfObjectContainingUUID(this.selected.payload.uuid, this.schema);
 
-      let newObject = {}
-      Object.keys(this.schema.properties).forEach(key => {
-        if (key !== oldName)
-          newObject[key] = this.schema.properties[key]
-        else
-          newObject[name] = { ...{}, ...this.schema.properties[this.selected.payload.name] }
-      })
-
-      this.schema.properties = newObject
-      this.selected.payload.name = name
+      if (keyInGrandparent !== name) {
+        // Add the new property with reactivity
+        this.$set(grandparent, name, grandparent[keyInGrandparent]);
+        // Delete the old property
+        delete grandparent[keyInGrandparent];
+      }
     },
 
     updateMetric (updatedMetric) {
@@ -224,8 +236,6 @@ export default {
      */
     getParentFromUUID (uuid, schema) {
       let parent = null
-
-      console.log('Looking for ' + uuid + ' in ', schema)
 
       if ('properties' in schema) {
         if ('uuid' in schema && schema.uuid === uuid) {

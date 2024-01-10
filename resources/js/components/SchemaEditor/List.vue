@@ -26,7 +26,9 @@
           <div>Instance_UUID</div>
         </div>
       </div>
-      <button @click="$emit('rowSelected', {type: 'metric', payload: {name: name, uuid: property.uuid, property: property}})" class="flex items-center gap-3 border-2 w-full active:bg-gray-100 hover:bg-gray-50 text-left" v-else-if="isMetric(property)">
+      <button @click.stop="clicked({type: 'metric', name: name, property: property})"
+              class="flex items-center gap-3 border-2 w-full active:bg-gray-100 hover:bg-gray-50 text-left"
+              v-else-if="isMetric(property)">
         <div v-tooltip="getMetricData(property).types[0]"
              class=" w-12 h-12 flex-shrink-0 flex items-center justify-center bg-gray-200">
           <i class="fa-solid fa-fw text-sm" :class="getMetricData(property).icon"></i>
@@ -35,17 +37,26 @@
           <div>{{name}}</div>
         </div>
       </button>
-      <button @click="goto_url_tab(`schema-editor?schema=${property.$ref.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/','')}`)" class="flex items-center gap-3 border-2 w-full active:bg-gray-100 hover:bg-gray-50 text-left" v-else-if="isSchema(property)">
+      <button
+          @click="goto_url_tab(`schema-editor?schema=${property.$ref.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/','')}`)"
+          class="flex items-center gap-3 border-2 w-full active:bg-gray-100 hover:bg-gray-50 text-left"
+          v-else-if="isSchema(property)">
         <div v-tooltip="property.$ref"
              class=" w-12 h-12 flex-shrink-0 flex items-center justify-center bg-gray-200">
           <i class="fa-solid fa-fw text-sm fa-cube"></i>
         </div>
         <div class="flex flex-col">
           <div>{{name}}</div>
-          <div class="text-xs text-gray-500 truncate">{{property.$ref.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/','')}}</div>
+          <div class="text-xs text-gray-500 truncate">{{
+              property.$ref.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/', '')
+            }}
+          </div>
         </div>
       </button>
-      <button @click="goto_url_tab(`schema-editor?schema=${property.patternProperties[Object.keys(property.patternProperties)[0]].$ref.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/','')}`)" class="flex items-center gap-3 border-2 w-full active:bg-gray-100 hover:bg-gray-50 text-left" v-else-if="isSchemaArray(property)">
+      <button
+          @click="goto_url_tab(`schema-editor?schema=${property.patternProperties[Object.keys(property.patternProperties)[0]].$ref.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/','')}`)"
+          class="flex items-center gap-3 border-2 w-full active:bg-gray-100 hover:bg-gray-50 text-left"
+          v-else-if="isSchemaArray(property)">
         <div v-tooltip="`Array of ${property.patternProperties[Object.keys(property.patternProperties)[0]].$ref}`"
              class=" w-12 h-12 flex-shrink-0 flex items-center justify-center bg-gray-200">
           <i class="fa-solid fa-fw text-sm fa-cubes"></i>
@@ -53,11 +64,16 @@
         <div class="flex">
           <div class="flex flex-col">
             <div>{{name}}</div>
-            <div class="text-xs text-gray-500 truncate">{{property.patternProperties[Object.keys(property.patternProperties)[0]].$ref.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/','')}}</div>
+            <div class="text-xs text-gray-500 truncate">{{
+                property.patternProperties[Object.keys(property.patternProperties)[0]].$ref.replace(
+                    'https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/', '')
+              }}
+            </div>
           </div>
         </div>
       </button>
-      <div v-else-if="isFolder(property)" @click="$emit('rowSelected', {type: 'folder', payload: {name: name, property: property}})">
+      <div v-else-if="isFolder(property)"
+           @click.stop="clicked({type: 'folder', name: name, property: property})">
         <button class="flex items-center gap-3 border-2 mb-3 w-full active:bg-gray-100 hover:bg-gray-50 text-left">
           <div v-tooltip="'Folder'"
                class="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-gray-200">
@@ -67,7 +83,8 @@
             <div>{{name}}</div>
           </div>
         </button>
-        <List @rowSelected="$emit('rowSelected')" @new="(e) => $emit('new', e)" class="ml-10" :properties="property.properties" :uuid="property.uuid"></List>
+        <List @rowSelected=" (e) => $emit('rowSelected', e)" @new="(e) => $emit('new', e)" class="ml-10"
+              :properties="property.properties" :uuid="property.uuid"></List>
       </div>
       <div v-else>
         {{property}}
@@ -98,20 +115,20 @@ export default {
     },
 
     /**
-    * The uuid of this folder
-    */
+     * The uuid of this folder
+     */
     uuid: {
       required: false,
-      type: String
+      type: String,
     },
 
     /**
-    * Whether or not to show the vertical guides for nested items
-    */
+     * Whether or not to show the vertical guides for nested items
+     */
     guides: {
       required: false,
       type: Boolean,
-      default: true
+      default: true,
     },
   },
 
@@ -120,6 +137,11 @@ export default {
   },
 
   methods: {
+
+    clicked (e) {
+      this.$emit('rowSelected',
+          { type: e.type, payload: { name: e.name, uuid: e.property.uuid, property: e.property } })
+    },
 
     checkIfObject (input) {
       // First, check if the variable is not null, and its typeof returns 'object'
@@ -135,7 +157,8 @@ export default {
     getMetricData (property) {
       return {
         types: property.allOf[1].properties.Sparkplug_Type.enum,
-        icon: `fa-${property.allOf[1].properties.Sparkplug_Type.enum?.[0]?.[0].toLowerCase() || 'question text-red-500'}`,
+        icon: `fa-${property.allOf[1].properties.Sparkplug_Type.enum?.[0]?.[0].toLowerCase() ||
+        'question text-red-500'}`,
         documentation: property.allOf[1].properties.Documentation.default,
         unit: property.allOf[1].properties.Eng_Unit?.default,
         low: property.allOf[1].properties.Eng_Low?.default,
@@ -159,15 +182,16 @@ export default {
           && Object.keys(property.patternProperties).length === 1
           && '$ref' in property.patternProperties[Object.keys(property.patternProperties)[0]]
           && typeof property.patternProperties[Object.keys(property.patternProperties)[0]].$ref === 'string'
-          && (new RegExp('-v\\d\.json')).test(property.patternProperties[Object.keys(property.patternProperties)[0]].$ref)
+          &&
+          (new RegExp('-v\\d\.json')).test(property.patternProperties[Object.keys(property.patternProperties)[0]].$ref)
     },
 
-    isFolder(property) {
+    isFolder (property) {
       return this.checkIfObject(property)
           && 'type' in property
           && 'properties' in property
           && property.type === 'object'
-    }
+    },
   },
 
   data () {
@@ -177,17 +201,17 @@ export default {
           title: 'New Metric',
           value: 'metric',
           action: () => {
-            this.$emit('new', { type: 'metric', parent: this.uuid})
+            this.$emit('new', { type: 'metric', parent: this.uuid })
           },
         },
         {
           title: 'New Folder',
           value: 'folder',
           action: () => {
-            this.$emit('new', { type: 'folder', parent: this.uuid})
+            this.$emit('new', { type: 'folder', parent: this.uuid })
           },
-        }
-      ]
+        },
+      ],
     }
   },
 }
