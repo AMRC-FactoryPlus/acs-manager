@@ -3,12 +3,21 @@
   -  Copyright 2023 AMRC
   -->
 
+<!-- TODO:-->
+<!-- 1. Prevent sub-schemas opening by default. Instead show editor panel that allows name change and link to open -->
+<!-- 2. Add sub-schema array support -->
+<!-- 3. Add deletion of metrics, folders and sub-schemas -->
+
 <template>
   <div class="flex bg-white m-3 overflow-auto flex-1 gap-1 h-100vh">
     <SchemaBrowserOverlay show-new :show="schemaBrowserVisible" @close="schemaBrowserVisible=false"
                           :device-schemas="deviceSchemas"
                           :device-schema-versions="deviceSchemaVersions"
                           @schema-selected="selectSchema"></SchemaBrowserOverlay>
+    <SchemaBrowserOverlay :show="subSchemaBrowserVisible" @close="subSchemaBrowserVisible=false"
+                          :device-schemas="deviceSchemas"
+                          :device-schema-versions="deviceSchemaVersions"
+                          @schema-selected="subSchemaSelected"></SchemaBrowserOverlay>
     <div v-if="schema" class="w-2/5 flex flex-col gap-3 p-2">
       <div class="flex items-center gap-2">
         <button @click="maybeNew" class="fpl-button-brand h-10">
@@ -148,6 +157,12 @@ export default {
             'properties': {},
             'required': [],
           })
+          break
+        case 'sub-schema':
+          this.subSchemaBrowserVisible = true
+          this.subSchemaBrowserType = 'sub-schema'
+          this.subSchemaParent = e.parent
+          this.subSchemaIndex = e.index
       }
     },
 
@@ -234,6 +249,26 @@ export default {
 
       // Stamp each metric with a UUID, that is, each object with an allOf key and two items in the array, throughout the entire nested schema.properties
       this.stampMetricsWithUUID(this.schema)
+    },
+
+    subSchemaSelected(schema) {
+      this.subSchemaBrowserVisible = false
+
+      if (this.subSchemaBrowserType === 'sub-schema') {
+        const parent = this.getParentFromUUID(this.subSchemaParent, this.schema)
+        const targetPointer = parent?.properties ?? this.schema.properties
+        let uuid = uuidv4();
+
+        this.$set(targetPointer, uuid, {
+          uuid: uuid,
+          index: this.subSchemaIndex,
+          $ref: schema.rawSchema.$id,
+        })
+      }
+
+      this.subSchemaIndex = null;
+      this.subSchemaParent = null;
+      this.subSchemaBrowserType = null
     },
 
     /**
@@ -357,6 +392,7 @@ export default {
     return {
 
       isContainer: true,
+
       // deviceSchemas
       deviceSchemas: null,
       deviceSchemasLoading: null,
@@ -372,6 +408,13 @@ export default {
       deviceSchemaVersionsQueryBank: null,
 
       schemaBrowserVisible: false,
+
+      subSchemaBrowserVisible: false,
+      subSchemaBrowserType: null,
+      subSchemaParent: null,
+      subSchemaIndex: null,
+
+
       schema: null,
       name: 'New_Schema-v1',
       selected: null,

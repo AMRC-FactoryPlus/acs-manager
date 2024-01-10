@@ -16,7 +16,7 @@
         :items="deviceSchemas"
         :show-divider="false">
       <template #admin-actions>
-        <button @click="newSchema" class="fpl-button-brand h-10">
+        <button v-if="showNew" @click="newSchema" class="fpl-button-brand h-10">
           <span>New</span>
           <i class="fa-sharp fa-solid ml-2 fa-plus"></i>
         </button>

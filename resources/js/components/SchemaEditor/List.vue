@@ -178,7 +178,6 @@ export default {
     isSchema (property) {
       return this.checkIfObject(property)
           && '$ref' in property
-          && Object.keys(property).length === 1
           && typeof property.$ref === 'string'
           && (new RegExp('-v\\d\.json')).test(property.$ref)
     },
@@ -219,6 +218,22 @@ export default {
           value: 'folder',
           action: () => {
             this.$emit('new', { type: 'folder', parent: this.uuid, index: this.sortedKeys.length })
+          },
+        },
+        {
+          title: 'Sub-Schema',
+          icon: 'fa-cube',
+          value: 'sub-schema',
+          action: () => {
+            this.$emit('new', { type: 'sub-schema', parent: this.uuid, index: this.sortedKeys.length })
+          },
+        },
+        {
+          title: 'Sub-Schema Array',
+          icon: 'fa-cubes',
+          value: 'sub-schema',
+          action: () => {
+            this.$emit('new', { type: 'sub-schema-array', parent: this.uuid, index: this.sortedKeys.length })
           },
         },
       ],
