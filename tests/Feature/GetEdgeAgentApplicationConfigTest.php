@@ -31,7 +31,7 @@ class GetEdgeAgentApplicationConfigTest extends TestCase
         // Ensure that we don't actually upload any files to the bucket
         Storage::fake('device-configurations');
         Storage::fake('device-connections');
-        //        Storage::fake('edge-agent-configs');
+        //
 
         $this->signInAdmin();
 
@@ -53,7 +53,6 @@ class GetEdgeAgentApplicationConfigTest extends TestCase
             deviceSchema: $deviceSchema->fresh(),
             version: $deviceSchema->versions()->whereVersion('1')->sole(),
             deviceConfiguration: file_get_contents(base_path('reference/protective_stop/instance.json')),
-            deviceConfigurationMetrics: '',
             active: false
         );
 

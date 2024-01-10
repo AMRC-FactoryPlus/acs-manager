@@ -4,12 +4,12 @@
   -->
 
 <template>
-  <div :key="this.selectedMetric.namePath.join('/')" v-if="schema && schemaLoading === false"
-       class="flex flex-col p-4">
-    <div class="grid grid-cols-2 gap-10 mb-6">
-      <div class="flex flex-col">
-        <div class="font-light text-sm text-gray-300 mb-2">{{selectedMetric.namePath.join(' / ')}}</div>
-        <div class="font-bold text-lg text-gray-600">{{selectedMetric.namePath.slice(-1)[0]}}</div>
+  <div :key="this.selectedMetric.path.join('.')" v-if="schema && schemaLoading === false"
+       class="flex flex-col p-4 w-full">
+    <div class="grid grid-cols-2 gap-10 mb-6 w-full">
+      <div class="flex flex-col w-full">
+        <div class="text-sm text-gray-400 mb-1 w-full">{{selectedMetric.path.join(' / ')}}</div>
+        <div class="font-bold text-lg text-gray-600">{{selectedMetric.path.slice(-1)[0]}}</div>
         <input class="font-light text-sm text-gray-400 w-full focus:outline-none focus:bg-gray-50 focus:p-1 mr-3 group"
                v-model="localModel.Documentation"></input>
       </div>
@@ -120,7 +120,6 @@
         }" :valid="{}" v-model="localModel.Deadband"></Input>
         </template>
       </Wrapper>
-
     </div>
   </div>
 </template>
@@ -139,11 +138,6 @@ export default {
     },
   },
   watch: {
-    selectedMetric: {
-      handler (val) {
-        this.populateForm()
-      }, deep: true,
-    },
 
     localModel: {
       handler (val) {
@@ -163,7 +157,7 @@ export default {
   },
   computed: {
     availableTypes () {
-      return this.selectedMetric.metric.properties.Sparkplug_Type.enum.map(e => {
+      return this.selectedMetric.schema.Sparkplug_Type.enum.map(e => {
         return {
           title: e === '' ? 'None' : e,
           value: e,
@@ -185,6 +179,8 @@ export default {
       })
       this.schema = data.data
       this.schemaLoading = false
+      this.localModel = this.selectedMetric.model
+      this.$emit('loaded');
     }).catch(error => {
       this.posting = false
       if (error && error.response && error.response.status === 401) {
@@ -193,7 +189,6 @@ export default {
       this.handleError(error)
     })
 
-    this.populateForm()
   },
   methods: {
     populateForm () {

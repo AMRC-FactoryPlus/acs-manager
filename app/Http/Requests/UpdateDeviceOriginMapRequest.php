@@ -30,10 +30,9 @@ class UpdateDeviceOriginMapRequest extends FormRequest
         return [
 
             'configuration' => 'required|json',
-            'metrics' => 'required|json',
             'activate' => 'required|boolean',
             'device_schema_id' => 'required|exists:device_schemas,id',
-            'device_schema_version_id' => 'required|exists:device_schema_versions,id',
+            'schema_uuid' => 'required|exists:device_schema_versions,schema_uuid',
         ];
     }
 }

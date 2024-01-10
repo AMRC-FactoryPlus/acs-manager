@@ -36,7 +36,7 @@ class ConfigureDeviceTest extends TestCase
         // Ensure that we don't actually upload any files to the bucket
         Storage::fake('device-configurations');
         Storage::fake('device-connections');
-        Storage::fake('edge-agent-configs');
+
 
         $this->signInAdmin();
 
@@ -45,10 +45,8 @@ class ConfigureDeviceTest extends TestCase
 
         // Create a Cell Gateway node
         $payload = [
-            'is_gateway' => true,
             'enabled' => true,
             'node_id' => 'Cell_Gateway',
-            'expiry' => Carbon::now(),
             'node_hostname' => 'lenTESTVALUE',
         ];
         $this->postJson('/api/groups/' . $group->id . '/nodes/new', $payload)
@@ -113,13 +111,9 @@ class ConfigureDeviceTest extends TestCase
         // Set the device_id
         $this->patchJson(
             '/api/devices/' . $device->id . '/origin-map', [
-                'metrics' => json_encode([], JSON_THROW_ON_ERROR),
                 'configuration' => file_get_contents(base_path('reference/protective_stop/instance.json')),
                 'activate' => true,
-                'device_schema_id' => $deviceSchema->id,
-                'device_schema_version_id' => $deviceSchema->versions()
-                                                           ->whereVersion('1')
-                                                           ->sole()->id,
+                'device_schema_id' => $deviceSchema->id
             ]
         )
              ->assertSuccessful();
@@ -172,11 +166,9 @@ class ConfigureDeviceTest extends TestCase
 
         // Create a Cell Gateway node
         $payload = [
-            'is_gateway' => true,
             'enabled' => true,
             'node_id' => 'Cell_Gateway',
             'node_hostname' => 'lenTESTVALUE',
-            'expiry' => Carbon::now(),
         ];
         $this->postJson('/api/groups/' . $group->id . '/nodes/new', $payload)
              ->assertSuccessful();
@@ -207,7 +199,7 @@ class ConfigureDeviceTest extends TestCase
         // Ensure that we don't actually upload any files to the bucket
         Storage::fake('device-configurations');
         Storage::fake('device-connections');
-        Storage::fake('edge-agent-configs');
+
 
         $this->signInAdmin();
 
@@ -216,10 +208,8 @@ class ConfigureDeviceTest extends TestCase
 
         // Create a Cell Gateway node
         $payload = [
-            'is_gateway' => true,
             'enabled' => true,
             'node_id' => 'Cell_Gateway',
-            'expiry' => Carbon::now(),
             'node_hostname' => 'lenTESTVALUE',
         ];
         $this->postJson('/api/groups/' . $group->id . '/nodes/new', $payload)
@@ -284,13 +274,9 @@ class ConfigureDeviceTest extends TestCase
         // Set the device_id
         $this->patchJson(
             '/api/devices/' . $device->id . '/origin-map', [
-                'metrics' => json_encode([], JSON_THROW_ON_ERROR),
                 'configuration' => file_get_contents(base_path('reference/protective_stop/instance.json')),
                 'activate' => true,
-                'device_schema_id' => $deviceSchema->id,
-                'device_schema_version_id' => $deviceSchema->versions()
-                                                           ->whereVersion('1')
-                                                           ->sole()->id,
+                'device_schema_id' => $deviceSchema->id
             ]
         )
              ->assertSuccessful();
@@ -331,6 +317,7 @@ class ConfigureDeviceTest extends TestCase
                    ->load('node')->node->activeEdgeNodeConfiguration
         );
 
+        // ! Needs rewriting to support configDB storage
         $edgeAgentConfig = json_decode(
             \Storage::disk('edge-agent-configs')
                     ->get(
@@ -369,13 +356,9 @@ class ConfigureDeviceTest extends TestCase
         // Set the device_id
         $this->patchJson(
             '/api/devices/' . $device->id . '/origin-map', [
-                'metrics' => json_encode([], JSON_THROW_ON_ERROR),
                 'configuration' => file_get_contents(base_path('reference/protective_stop/instance.json')),
                 'activate' => true,
-                'device_schema_id' => $deviceSchema->id,
-                'device_schema_version_id' => $deviceSchema->versions()
-                                                           ->whereVersion('1')
-                                                           ->sole()->id,
+                'device_schema_id' => $deviceSchema->id
             ]
         )
              ->assertSuccessful();
@@ -399,6 +382,7 @@ class ConfigureDeviceTest extends TestCase
         );
         assertNotNull($device->device_connection_id);
 
+        // ! Needs rewriting to support configDB storage
         $edgeAgentConfig = json_decode(
             \Storage::disk('edge-agent-configs')
                     ->get(

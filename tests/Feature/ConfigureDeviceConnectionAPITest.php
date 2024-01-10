@@ -25,7 +25,7 @@ class ConfigureDeviceConnectionAPITest extends TestCase
         // Ensure that we don't actually upload any files to the bucket
         Storage::fake('device-configurations');
         Storage::fake('device-connections');
-        Storage::fake('edge-agent-configs');
+
 
         $this->signInAdmin();
         $this->withoutExceptionHandling();
@@ -35,7 +35,6 @@ class ConfigureDeviceConnectionAPITest extends TestCase
 
         // Create a Cell Gateway node
         $payload = [
-            'is_gateway' => true,
             'enabled' => true,
             'node_id' => 'Cell_Gateway',
             'node_hostname' => 'lenTESTVALUE',
@@ -57,7 +56,6 @@ class ConfigureDeviceConnectionAPITest extends TestCase
             deviceSchema              : $deviceSchema->fresh(),
             version                   : $deviceSchema->versions()->whereVersion('1')->sole(),
             deviceConfiguration       : file_get_contents(base_path('reference/protective_stop/instance.json')),
-            deviceConfigurationMetrics: '',
             active                    : false
         );
 

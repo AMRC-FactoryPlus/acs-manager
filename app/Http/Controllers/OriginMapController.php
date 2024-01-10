@@ -29,7 +29,7 @@ class OriginMapController extends Controller
         }
 
         // Get the deviceSchemaVersion
-        $deviceSchemaVersion = DeviceSchemaVersion::where('id', $validated['device_schema_version_id'])->first();
+        $deviceSchemaVersion = DeviceSchemaVersion::where('schema_uuid', $validated['schema_uuid'])->first();
         if (! $deviceSchemaVersion) {
             throw new ActionFailException(
                 'The device schema version does not exist.', 404
@@ -42,7 +42,6 @@ class OriginMapController extends Controller
             deviceSchema              : $deviceSchema->fresh(),
             version                   : $deviceSchemaVersion,
             deviceConfiguration       : $validated['configuration'],
-            deviceConfigurationMetrics: $validated['metrics'],
             active                    : $validated['activate']
         );
     }

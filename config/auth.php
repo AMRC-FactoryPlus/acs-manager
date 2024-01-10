@@ -8,6 +8,7 @@ use App\Domain\Users\Models\User;
 
 return [
 
+
     /*
     |--------------------------------------------------------------------------
     | Authentication Defaults
@@ -50,7 +51,6 @@ return [
         'api' => [
             'driver' => 'passport',
             'provider' => 'users',
-            'hash' => false,
         ],
     ],
 

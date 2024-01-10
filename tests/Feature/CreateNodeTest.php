@@ -29,11 +29,9 @@ class CreateNodeTest extends TestCase
              ->assertSuccessful();
 
         $payload = [
-            'is_gateway' => true,
             'enabled' => true,
             'node_id' => 'Cell_Gateway',
             'node_hostname' => 'lenTESTVALUE',
-            'expiry' => Carbon::now(),
         ];
         $groupId = Group::first()->id;
 
@@ -51,11 +49,9 @@ class CreateNodeTest extends TestCase
     public function non_administrators_can_not_create_nodes()
     {
         $payload = [
-            'is_gateway' => true,
             'enabled' => true,
             'node_id' => 'Cell_Gateway',
             'node_hostname' => 'lenTESTVALUE',
-            'expiry' => Carbon::now(),
         ];
         $this->signInAdmin();
         $group = (new CreateGroupAction)->execute('AMRC-TestGroup-1', Cluster::first())['data'];
@@ -77,10 +73,8 @@ class CreateNodeTest extends TestCase
         $group = (new CreateGroupAction)->execute('AMRC-TestGroup-1', Cluster::first())['data'];
 
         $payload = [
-            'is_gateway' => true,
             'enabled' => true,
             'node_id' => 'Cell_Gateway Test',
-            'expiry' => Carbon::now(),
         ];
 
         $this->signInAdmin();

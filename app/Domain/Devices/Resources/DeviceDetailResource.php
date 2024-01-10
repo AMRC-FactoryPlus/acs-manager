@@ -20,12 +20,12 @@ class DeviceDetailResource extends JsonResource
      */
     public function toArray($request)
     {
+
         return [
             'created_at' => $this['created_at'],
             'updated_at' => $this['updated_at'],
             'id' => $this['id'],
             'instance_uuid' => $this['instance_uuid'] ?? null,
-            'schema_uuid' => $this['schema_uuid'] ?? null,
             'node_id' => $this['node_id'],
             'device_id' => $this['device_id'],
             'device_connection_id' => $this['device_connection_id'],
@@ -35,12 +35,6 @@ class DeviceDetailResource extends JsonResource
             'latest_origin_map' => $this->latestOriginMap,
             'model' => $this->latestOriginMap ? json_decode(
                 Storage::disk('device-configurations')->get($this->latestOriginMap->file),
-                false,
-                512,
-                JSON_THROW_ON_ERROR
-            ) : null,
-            'metrics' => $this->latestOriginMap ? json_decode(
-                Storage::disk('device-configurations')->get($this->latestOriginMap->metrics),
                 false,
                 512,
                 JSON_THROW_ON_ERROR
