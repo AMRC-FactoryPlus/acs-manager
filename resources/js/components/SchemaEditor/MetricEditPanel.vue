@@ -15,7 +15,7 @@
                  :control="{name: 'Name',}"
                  :valid="{}"
                  :value="localName"
-                 @input="updateName"
+                 @input="updateMetricName"
           ></Input>
         </div>
       </template>
@@ -181,9 +181,9 @@ export default {
       return options.some(e => e.value === val)
     },
 
-    updateName (e) {
+    updateMetricName (e) {
       this.localName = e
-      this.$emit('updateName', this.localName)
+      this.$emit('updateMetricName', this.localName)
     },
 
     selectMetric () {

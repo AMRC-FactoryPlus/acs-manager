@@ -34,11 +34,15 @@
       </div>
     </div>
     <div class="flex-1 bg-gray-50">
-      <MetricEditPanel v-if="selectedMetric"
-                      :selectedMetric="selectedMetric"
+      <MetricEditPanel v-if="selected && selected.type === 'metric'"
+                       :selectedMetric="selected.payload"
                        @updateMetric="updateMetric"
-                       @updateName="updateName"
+                       @updateMetricName="renameSelected"
       ></MetricEditPanel>
+      <FolderEditPanel v-if="selected && selected.type === 'folder'"
+                       :selectedFolder="selected.payload"
+                       @updateFolderName="renameSelected"
+      ></FolderEditPanel>
     </div>
   </div>
 </template>
@@ -48,10 +52,11 @@ import useVuelidate from '@vuelidate/core'
 import download from 'downloadjs'
 import SchemaBrowserOverlay from '@/resources/js/components/Schemas/SchemaBrowserOverlay.vue'
 import { v4 as uuidv4 } from 'uuid'
+import { toRaw } from 'vue'
 
 export default {
   setup () {
-    return { v$: useVuelidate({ $stopPropagation: true }) }
+    return { v$: useVuelidate({ $stopPropagation: true }), toRaw }
   },
 
   name: 'SchemaEditorContainer',
@@ -66,6 +71,7 @@ export default {
     SchemaBrowserOverlay,
     'List': () => import(/* webpackPrefetch: true */ '../SchemaEditor/List.vue'),
     'MetricEditPanel': () => import(/* webpackPrefetch: true */ '../SchemaEditor/MetricEditPanel.vue'),
+    'FolderEditPanel': () => import(/* webpackPrefetch: true */ '../SchemaEditor/FolderEditPanel.vue'),
   },
 
   props: {
@@ -104,7 +110,7 @@ export default {
 
   methods: {
     create (type) {
-      let uuid = uuidv4();
+      let uuid = uuidv4()
       switch (type) {
         case 'metric':
           this.$set(this.schema.properties, uuid, {
@@ -129,7 +135,8 @@ export default {
           })
           break
         case 'folder':
-          this.$set(this.schema.properties, 'New_Folder', {
+          this.$set(this.schema.properties, uuid, {
+            uuid: uuid,
             'type': 'object',
             'properties': {},
             'required': [],
@@ -138,29 +145,25 @@ export default {
     },
 
     handleRowSelection (e) {
-      if (e.type === 'metric') {
-        this.selectedMetric = e.payload
-      }
-      if (e.type === 'folder') {
-        this.selectedFolder = e.payload
-      }
+      this.selected = e
+      // selectedMetric
+      // selectedFolder
     },
 
-    updateName (name) {
+    renameSelected (name) {
       // Rename the key in this.schema.properties to the new name
-      let oldName = this.selectedMetric.name;
+      let oldName = this.selected.payload.name
 
-      let newObject = {};
-      Object.keys(this.schema.properties)
-      .forEach(key => {
+      let newObject = {}
+      Object.keys(this.schema.properties).forEach(key => {
         if (key !== oldName)
-          newObject[key] = this.schema.properties[key];
+          newObject[key] = this.schema.properties[key]
         else
-          newObject[name] = {...{}, ...this.schema.properties[this.selectedMetric.name]}
-      });
+          newObject[name] = { ...{}, ...this.schema.properties[this.selected.payload.name] }
+      })
 
-      this.schema.properties = newObject;
-      this.selectedMetric.name = name;
+      this.schema.properties = newObject
+      this.selected.payload.name = name
     },
 
     updateMetric (updatedMetric) {
@@ -169,13 +172,13 @@ export default {
     },
 
     download () {
-      download(JSON.stringify(this.getSchemaWithoutUUIDFields(), null, 2),
+      download(JSON.stringify(this.getSchemaWithoutUUIDFields(this.schema), null, 2),
           `${this.schema.$id.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/', '')}`,
           'text/plain')
     },
 
     copy () {
-      navigator.clipboard.writeText(JSON.stringify(this.getSchemaWithoutUUIDFields(), null, 2))
+      navigator.clipboard.writeText(JSON.stringify(this.getSchemaWithoutUUIDFields(this.schema), null, 2))
       window.showNotification({
         title: 'Copied',
         description: 'The JSON for this schema has been copied to the clipboard.',
@@ -192,8 +195,9 @@ export default {
       this.schema = schema.rawSchema
 
       // Remove the URL up to main/ and .json from the end of the schema $id
-      if (this.schema.$id.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/', '') === 'undefined') {
-        this.name = 'New_Schema-v1';
+      if (this.schema.$id.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/', '') ===
+          'undefined') {
+        this.name = 'New_Schema-v1'
       } else {
         this.name = this.schema.$id.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/', '').
             replace('.json', '')
@@ -221,17 +225,21 @@ export default {
       return schema
     },
 
-    getSchemaWithoutUUIDFields () {
-      let s = _.cloneDeep(this.schema);
+    getSchemaWithoutUUIDFields (inputSchema) {
+      let s = toRaw(_.cloneDeep(inputSchema))
 
-      if (s.hasOwnProperty('properties')) {
+      if ('uuid' in s) {
+        delete s.uuid
+      }
+      if ('properties' in s) {
         for (const key in s.properties) {
-          // Check if we have a `properties` key for nested metrics
-          if (s.properties[key].hasOwnProperty('properties')) {
-            this.getSchemaWithoutUUIDFields(s.properties[key])
+          if ('uuid' in s.properties[key]) {
+            delete s.properties[key].uuid
+          }
+          if ('properties' in s.properties[key]) {
+            s.properties[key] = this.getSchemaWithoutUUIDFields(s.properties[key])
           } else {
-            // Check for 'type' key rather than 'allOf' key with two items
-            if (s.properties[key].hasOwnProperty('allOf') && s.properties[key].allOf.length === 2) {
+            if ('uuid' in s.properties[key]) {
               delete s.properties[key].uuid
             }
           }
@@ -319,8 +327,7 @@ export default {
       schemaBrowserVisible: false,
       schema: null,
       name: 'New_Schema-v1',
-      selectedMetric: null,
-      selectedFolder: null,
+      selected: null,
 
     }
   },
