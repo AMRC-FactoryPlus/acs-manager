@@ -6,7 +6,7 @@
 <template>
   <div class="flex flex-col gap-2 flex-1" :class="guides ? '' : 'overflow-y-auto'">
     <div v-if="guides" class="absolute w-0.5 left-6 top-[3.25rem] bottom-7 bg-gray-300 group-last:h-0"></div>
-    <div v-for="(property, name) in properties" class="relative group text-left overflow-visible">
+    <div v-for="name in sortedKeys" class="relative group text-left overflow-visible">
       <div v-if="guides" class="absolute h-0.5 w-4 -left-4 top-6 bg-gray-300"></div>
       <div v-if="name === 'Schema_UUID'" class="flex items-center gap-3 border-2 bg-gray-100">
         <div v-tooltip="'Schema UUID'"
@@ -26,38 +26,38 @@
           <div>Instance_UUID</div>
         </div>
       </div>
-      <button @click.stop="clicked({type: 'metric', name: name, property: property})"
+      <button @click.stop="clicked({type: 'metric', name: name, property: properties[name]})"
               class="flex items-center gap-3 border-2 w-full active:bg-gray-100 hover:bg-gray-50 text-left"
-              v-else-if="isMetric(property)">
-        <div v-tooltip="getMetricData(property).types[0]"
+              v-else-if="isMetric(properties[name])">
+        <div v-tooltip="getMetricData(properties[name]).types[0]"
              class=" w-12 h-12 flex-shrink-0 flex items-center justify-center bg-gray-200">
-          <i class="fa-solid fa-fw text-sm" :class="getMetricData(property).icon"></i>
+          <i class="fa-solid fa-fw text-sm" :class="getMetricData(properties[name]).icon"></i>
         </div>
         <div class="flex">
           <div>{{name}}</div>
         </div>
       </button>
       <button
-          @click="goto_url_tab(`schema-editor?schema=${property.$ref.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/','')}`)"
+          @click="goto_url_tab(`schema-editor?schema=${properties[name].$ref.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/','')}`)"
           class="flex items-center gap-3 border-2 w-full active:bg-gray-100 hover:bg-gray-50 text-left"
-          v-else-if="isSchema(property)">
-        <div v-tooltip="property.$ref"
+          v-else-if="isSchema(properties[name])">
+        <div v-tooltip="properties[name].$ref"
              class=" w-12 h-12 flex-shrink-0 flex items-center justify-center bg-gray-200">
           <i class="fa-solid fa-fw text-sm fa-cube"></i>
         </div>
         <div class="flex flex-col">
           <div>{{name}}</div>
           <div class="text-xs text-gray-500 truncate">{{
-              property.$ref.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/', '')
+              properties[name].$ref.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/', '')
             }}
           </div>
         </div>
       </button>
       <button
-          @click="goto_url_tab(`schema-editor?schema=${property.patternProperties[Object.keys(property.patternProperties)[0]].$ref.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/','')}`)"
+          @click="goto_url_tab(`schema-editor?schema=${properties[name].patternProperties[Object.keys(properties[name].patternProperties)[0]].$ref.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/','')}`)"
           class="flex items-center gap-3 border-2 w-full active:bg-gray-100 hover:bg-gray-50 text-left"
-          v-else-if="isSchemaArray(property)">
-        <div v-tooltip="`Array of ${property.patternProperties[Object.keys(property.patternProperties)[0]].$ref}`"
+          v-else-if="isSchemaArray(properties[name])">
+        <div v-tooltip="`Array of ${properties[name].patternProperties[Object.keys(properties[name].patternProperties)[0]].$ref}`"
              class=" w-12 h-12 flex-shrink-0 flex items-center justify-center bg-gray-200">
           <i class="fa-solid fa-fw text-sm fa-cubes"></i>
         </div>
@@ -65,14 +65,14 @@
           <div class="flex flex-col">
             <div>{{name}}</div>
             <div class="text-xs text-gray-500 truncate">{{
-                property.patternProperties[Object.keys(property.patternProperties)[0]].$ref.replace(
+                properties[name].patternProperties[Object.keys(properties[name].patternProperties)[0]].$ref.replace(
                     'https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/', '')
               }}
             </div>
           </div>
         </div>
       </button>
-      <div v-else-if="isFolder(property)"
+      <div v-else-if="isFolder(properties[name])"
            @click.stop="clicked({type: 'folder', name: name, property: property})">
         <button class="flex items-center gap-3 border-2 mb-3 w-full active:bg-gray-100 hover:bg-gray-50 text-left">
           <div v-tooltip="'Folder'"
@@ -84,10 +84,10 @@
           </div>
         </button>
         <List @rowSelected=" (e) => $emit('rowSelected', e)" @new="(e) => $emit('new', e)" class="ml-10"
-              :properties="property.properties" :uuid="property.uuid"></List>
+              :properties="properties[name].properties" :uuid="properties[name].uuid"></List>
       </div>
       <div v-else>
-        {{property}}
+        {{properties[name]}}
       </div>
     </div>
     <OverflowMenu class="col-span-5"
@@ -134,6 +134,14 @@ export default {
 
   components: {
     'List': () => import(/* webpackPrefetch: true */ './List.vue'),
+  },
+
+  computed: {
+    sortedKeys() {
+      return Object.keys(this.properties).sort((a, b) => {
+        return this.properties[a].index - this.properties[b].index;
+      });
+    }
   },
 
   methods: {
@@ -201,14 +209,14 @@ export default {
           title: 'New Metric',
           value: 'metric',
           action: () => {
-            this.$emit('new', { type: 'metric', parent: this.uuid })
+            this.$emit('new', { type: 'metric', parent: this.uuid, index: this.sortedKeys.length })
           },
         },
         {
           title: 'New Folder',
           value: 'folder',
           action: () => {
-            this.$emit('new', { type: 'folder', parent: this.uuid })
+            this.$emit('new', { type: 'folder', parent: this.uuid, index: this.sortedKeys.length })
           },
         },
       ],

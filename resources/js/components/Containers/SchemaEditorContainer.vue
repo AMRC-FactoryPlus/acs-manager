@@ -120,6 +120,7 @@ export default {
         case 'metric':
           this.$set(targetPointer, uuid, {
             uuid: uuid,
+            index: e.index,
             allOf: [
               {
                 $ref: 'https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/Common/Metric-v1.json',
@@ -142,6 +143,7 @@ export default {
         case 'folder':
           this.$set(targetPointer, uuid, {
             uuid: uuid,
+            index: e.index,
             'type': 'object',
             'properties': {},
             'required': [],
@@ -263,6 +265,7 @@ export default {
 
     stampMetricsWithUUID (schema) {
       if (schema.hasOwnProperty('properties')) {
+        let index = 0;
         for (const key in schema.properties) {
           // Check if we have a `properties` key for nested metrics
           if (schema.properties[key].hasOwnProperty('properties')) {
@@ -271,6 +274,8 @@ export default {
             // Check for 'type' key rather than 'allOf' key with two items
             if (schema.properties[key].hasOwnProperty('allOf') && schema.properties[key].allOf.length === 2) {
               schema.properties[key].uuid = uuidv4()
+              schema.properties[key].index = index;
+              index++;
             }
           }
         }
@@ -290,11 +295,17 @@ export default {
           if ('uuid' in s.properties[key]) {
             delete s.properties[key].uuid
           }
+          if ('index' in s.properties[key]) {
+            delete s.properties[key].index
+          }
           if ('properties' in s.properties[key]) {
             s.properties[key] = this.getSchemaWithoutUUIDFields(s.properties[key])
           } else {
             if ('uuid' in s.properties[key]) {
               delete s.properties[key].uuid
+            }
+            if ('index' in s.properties[key]) {
+              delete s.properties[key].index
             }
           }
         }
