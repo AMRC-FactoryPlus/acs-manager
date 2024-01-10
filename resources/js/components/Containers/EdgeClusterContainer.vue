@@ -92,7 +92,7 @@ export default {
       try {
         await navigator.clipboard.writeText(text);
       } catch (err) {
-        console.log(`Failed to copy to clipboard: ${text}`);
+        console.warn(`Failed to copy to clipboard: ${text}`);
         window.showNotification({
           title: 'Failed to copy to clipboard.',
           description: err,
