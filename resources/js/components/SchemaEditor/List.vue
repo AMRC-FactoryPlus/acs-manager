@@ -206,14 +206,16 @@ export default {
     return {
       newItemOptions: [
         {
-          title: 'New Metric',
+          title: 'Metric',
+          icon: 'fa-tag',
           value: 'metric',
           action: () => {
             this.$emit('new', { type: 'metric', parent: this.uuid, index: this.sortedKeys.length })
           },
         },
         {
-          title: 'New Folder',
+          title: 'Folder',
+          icon: 'fa-folder',
           value: 'folder',
           action: () => {
             this.$emit('new', { type: 'folder', parent: this.uuid, index: this.sortedKeys.length })
