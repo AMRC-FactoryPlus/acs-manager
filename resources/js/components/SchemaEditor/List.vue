@@ -73,7 +73,7 @@
         </div>
       </button>
       <div v-else-if="isFolder(properties[name])"
-           @click.stop="clicked({type: 'folder', name: name, property: property})">
+           @click.stop="clicked({type: 'folder', name: name, property: properties[name]})">
         <button class="flex items-center gap-3 border-2 mb-3 w-full active:bg-gray-100 hover:bg-gray-50 text-left">
           <div v-tooltip="'Folder'"
                class="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-gray-200">
