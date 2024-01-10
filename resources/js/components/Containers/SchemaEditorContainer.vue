@@ -21,7 +21,8 @@
         </button>
       </div>
       <input class="font-bold text-brand text-lg bg-gray-100 p-2" v-model="name">
-      <List @new="create" @rowSelected="handleRowSelection" :guides="false" :properties="schema.properties"></List>
+      <List @new="create" @rowSelected="handleRowSelection" :guides="false" :properties="schema.properties"
+            :uuid="null"></List>
       <div class="flex items-center">
         <button @click="copy" class="fpl-button-brand h-10 flex-1 gap-3">
           <span>Copy JSON</span>
@@ -109,11 +110,19 @@ export default {
   },
 
   methods: {
-    create (type) {
+    create (e) {
       let uuid = uuidv4()
-      switch (type) {
+
+      console.log(e)
+
+      // * Get parent from UUID and put in the properties of that, not the this.schema.properties
+
+      const parent = this.getParentFromUUID(e.parent, this.schema)
+      const targetPointer = parent?.properties ?? this.schema.properties
+
+      switch (e.type) {
         case 'metric':
-          this.$set(this.schema.properties, uuid, {
+          this.$set(targetPointer, uuid, {
             uuid: uuid,
             allOf: [
               {
@@ -135,7 +144,7 @@ export default {
           })
           break
         case 'folder':
-          this.$set(this.schema.properties, uuid, {
+          this.$set(targetPointer, uuid, {
             uuid: uuid,
             'type': 'object',
             'properties': {},
@@ -205,6 +214,35 @@ export default {
 
       // Stamp each metric with a UUID, that is, each object with an allOf key and two items in the array, throughout the entire nested schema.properties
       this.stampMetricsWithUUID(this.schema)
+    },
+
+    /**
+     * Find the parent folder with the specified UUID
+     * @param uuid
+     * @param schema
+     * @returns {null}
+     */
+    getParentFromUUID (uuid, schema) {
+      let parent = null
+
+      console.log('Looking for ' + uuid + ' in ', schema)
+
+      if ('properties' in schema) {
+        if ('uuid' in schema && schema.uuid === uuid) {
+          parent = schema
+        } else {
+          for (const key in schema.properties) {
+            if ('properties' in schema.properties[key]) {
+              parent = this.getParentFromUUID(uuid, schema.properties[key])
+              if (parent !== null) {
+                return parent
+              }
+            }
+          }
+        }
+      }
+
+      return parent
     },
 
     stampMetricsWithUUID (schema) {

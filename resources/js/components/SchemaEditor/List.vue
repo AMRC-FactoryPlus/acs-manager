@@ -67,7 +67,7 @@
             <div>{{name}}</div>
           </div>
         </button>
-        <List @rowSelected="e => $emit('rowSelected', e)" class="ml-10" :properties="property.properties"></List>
+        <List @rowSelected="$emit('rowSelected')" @new="(e) => $emit('new', e)" class="ml-10" :properties="property.properties" :uuid="property.uuid"></List>
       </div>
       <div v-else>
         {{property}}
@@ -95,6 +95,14 @@ export default {
     properties: {
       required: true,
       type: Object,
+    },
+
+    /**
+    * The uuid of this folder
+    */
+    uuid: {
+      required: false,
+      type: String
     },
 
     /**
@@ -169,14 +177,14 @@ export default {
           title: 'New Metric',
           value: 'metric',
           action: () => {
-            this.$emit('new', 'metric')
+            this.$emit('new', { type: 'metric', parent: this.uuid})
           },
         },
         {
           title: 'New Folder',
           value: 'folder',
           action: () => {
-            this.$emit('new', 'folder')
+            this.$emit('new', { type: 'folder', parent: this.uuid})
           },
         }
       ]
