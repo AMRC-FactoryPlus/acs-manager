@@ -37,7 +37,7 @@
     <div class="flex-1 bg-gray-50">
       <MetricEditPanel v-if="selected && selected.type === 'metric'"
                        :selectedMetric="selected.payload"
-                       @updateMetric="updateMetric"
+                       @updateMetric="updateSelectedMetric"
                        @updateMetricName="renameSelected"
       ></MetricEditPanel>
       <FolderEditPanel v-if="selected && selected.type === 'folder'"
@@ -177,19 +177,25 @@ export default {
     },
 
     renameSelected (name) {
-      let { grandparent, keyInGrandparent } = this.getParentOfObjectContainingUUID(this.selected.payload.uuid, this.schema);
+      let { grandparent, keyInGrandparent } = this.getParentOfObjectContainingUUID(this.selected.payload.uuid,
+          this.schema)
 
       if (keyInGrandparent !== name) {
         // Add the new property with reactivity
-        this.$set(grandparent, name, grandparent[keyInGrandparent]);
+        this.$set(grandparent, name, grandparent[keyInGrandparent])
         // Delete the old property
-        delete grandparent[keyInGrandparent];
+        delete grandparent[keyInGrandparent]
       }
     },
 
-    updateMetric (updatedMetric) {
-      this.updateMetricWithUUID(updatedMetric, this.schema)
+    updateSelectedMetric (updatedMetric) {
+      this.updateMetricWithUUID(updatedMetric, this.selected.payload.uuid)
 
+    },
+
+    updateMetricWithUUID (p, uuid) {
+      let { grandparent, keyInGrandparent } = this.getParentOfObjectContainingUUID(uuid, this.schema)
+      this.$set(grandparent[keyInGrandparent], 'allOf', p.property.allOf)
     },
 
     download () {
@@ -295,24 +301,6 @@ export default {
       }
 
       return s
-    },
-
-    updateMetricWithUUID (p, schema) {
-      if (schema.hasOwnProperty('properties')) {
-        for (const key in schema.properties) {
-          // Check if we have a `properties` key for nested metrics
-          if (schema.properties[key].hasOwnProperty('properties')) {
-            this.updateMetricWithUUID(p.uuid, p.property, schema.properties[key])
-          } else {
-            if (schema.properties[key].hasOwnProperty('allOf') && schema.properties[key].allOf.length === 2 &&
-                schema.properties[key].uuid === p.uuid) {
-              schema.properties[key].allOf = p.property.allOf
-            }
-          }
-        }
-      }
-
-      return schema
     },
 
     maybeNew () {
