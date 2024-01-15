@@ -24,7 +24,7 @@
             <div class="flex items-center justify-center gap-0">
             </div>
           </div>
-          <div v-if="item.status" class="flex items-center text-gray-400 text-xs">{{item.status?.nodes.length}} Nodes
+          <div v-if="item.status" class="flex items-center text-gray-400 text-xs">{{item.status?.hosts?.length}} Nodes
           </div>
           <div v-else class="flex items-center text-gray-400 animate-pulse text-xs tracking-wider font-normal gap-1">
             <div class="flex items-center justify-center">
@@ -43,7 +43,8 @@
       </template>
     </ColumnList>
     <new-edge-cluster-overlay :show="newClusterDialogVisible" @close="newClusterDialogVisible=false"
-                              @complete="newClusterCreated"></new-edge-cluster-overlay>
+                              @complete="newClusterCreated" :helm-chart-templates="helmChartTemplates"
+                              :default-helm-chart-templates="defaultHelmChartTemplates"></new-edge-cluster-overlay>
   </div>
 </template>
 
@@ -70,33 +71,34 @@ export default {
     },
 
     copyBootstrapCommand (item) {
-      axios.get(`/api/edge-clusters/${item.name}/bootstrap-command`).then((response) => {
+      axios.get(`/api/edge-clusters/${item.uuid}/bootstrap-command`).then((response) => {
         if (response.data.data) {
-          this.copyToClipboard(response.data.data);
+          this.copyToClipboard(response.data.data)
           window.showNotification({
             title: 'Copied to clipboard',
             description: 'The bootstrap command has been copied to your clipboard. Paste this onto the node you wish to bootstrap.',
             type: 'success',
-          });
+          })
         } else {
           window.showNotification({
-              title: 'Not ready',
-              description: 'The bootstrap script is not ready yet. Please wait a few moments and try again.',
-              type: 'error',
-          });
+            title: 'Not ready',
+            description: 'The bootstrap script is not ready yet. Please wait a few moments and try again.',
+            type: 'error',
+          })
         }
       })
     },
 
-    async copyToClipboard(text) {
+    async copyToClipboard (text) {
       try {
-        await navigator.clipboard.writeText(text);
+        await navigator.clipboard.writeText(text)
       } catch (err) {
+        console.warn(`Failed to copy to clipboard: ${text}`);
         window.showNotification({
           title: 'Failed to copy to clipboard.',
           description: err,
           type: 'error',
-        });
+        })
       }
     },
 
@@ -117,6 +119,22 @@ export default {
       edgeClustersQueryBank: {},
       edgeClustersRouteVar: null,
       edgeClustersForceLoad: true,
+
+      // helmChartTemplates
+      helmChartTemplates: null,
+      helmChartTemplatesLoading: false,
+      helmChartTemplatesLoaded: false,
+      helmChartTemplatesQueryBank: {},
+      helmChartTemplatesRouteVar: null,
+      helmChartTemplatesForceLoad: true,
+
+      // defaultHelmChartTemplates
+      defaultHelmChartTemplates: null,
+      defaultHelmChartTemplatesLoading: false,
+      defaultHelmChartTemplatesLoaded: false,
+      defaultHelmChartTemplatesQueryBank: {},
+      defaultHelmChartTemplatesRouteVar: null,
+      defaultHelmChartTemplatesForceLoad: true,
 
     }
   },

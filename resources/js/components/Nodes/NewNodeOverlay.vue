@@ -44,6 +44,12 @@ export default {
     edgeClusters: {
       required: true,
     },
+    helmChartTemplates: {
+      required: true,
+    },
+    defaultHelmChartTemplates: {
+      required: true,
+    },
   },
 
   watch: {
@@ -56,22 +62,33 @@ export default {
       },
     },
 
+    helmChartTemplates: {
+      immediate: true,
+      handler: function (val) {
+        if (val) {
+          this.buildHelmChartTemplateOptions();
+        }
+      },
+    },
+
     edgeClusters: {
       immediate: true,
       handler: function (val) {
         if (val) {
-          this.steps.nodeSelection.controls.destination_node.options = Object.keys(val).map((edgeCluster) => {
+          const control = this.steps.nodeSelection.controls.destination_node;
+          const params = this.steps.__request.parameters;
+          control.options = Object.entries(val).filter(([edgeCluster, config]) => config.status).map(([edgeCluster, config]) => {
             return {
               title: edgeCluster,
               value: edgeCluster,
-              options: Object.keys(val[edgeCluster].nodes).map(e => {
+              options: config.status.hosts.map(host => {
                 return {
-                  title: val[edgeCluster].nodes[e].hostname,
-                  value: val[edgeCluster].nodes[e].hostname,
+                  title: `${host.hostname} (${host.arch})`,
+                  value: host.hostname,
                   action: () => {
-                    this.steps.__request.parameters.destination_cluster.data = val[edgeCluster].uuid
-                    this.steps.__request.parameters.destination_node.data = val[edgeCluster].nodes[e].hostname
-                    this.steps.nodeSelection.controls.destination_node.value = val[edgeCluster].nodes[e].hostname
+                    params.destination_cluster.data = config.uuid;
+                    params.destination_node.data = host.hostname;
+                    control.value = host.hostname;
                   },
                 }
               })
@@ -85,6 +102,21 @@ export default {
   },
 
   methods: {
+
+    buildHelmChartTemplateOptions() {
+      this.steps.nodeSelection.controls.charts.options = Object.keys(this.helmChartTemplates).map((helmChartTemplate) => {
+        return {
+          title: this.helmChartTemplates[helmChartTemplate].name,
+          value: helmChartTemplate,
+          action: () => {
+            this.steps.__request.parameters.charts.data = helmChartTemplate
+            this.steps.nodeSelection.controls.charts.value = this.helmChartTemplates[helmChartTemplate].name
+          },
+        }
+      })
+      this.$forceUpdate();
+
+    },
 
     completed (response) {
       this.$emit('complete', response)
@@ -120,6 +152,11 @@ export default {
               dataType: 'static',
               data: null,
             },
+            charts: {
+              dataType: 'collected',
+              dataSource: ['nodeSelection', 'controls', 'charts', 'value'],
+              data: null,
+            },
           },
         },
         nodeSelection: {
@@ -127,7 +164,7 @@ export default {
           controls: {
             node_name: {
               name: 'Node Name',
-              description: 'Node names must use underscores for spaces.',
+              description: 'Node names must use underscores for spaces',
               prefix: '',
               placeholder: 'e.g. Assembly_Cell',
               type: 'input',
@@ -142,7 +179,7 @@ export default {
             },
             destination_node: {
               name: 'Destination Node',
-              description: 'Choose a remote cluster and edge device on which to deploy the new Sparkplug node.',
+              description: 'Choose a remote cluster and edge device on which to deploy the new Sparkplug node',
               type: 'dropdown',
               options: [],
               validations: {
@@ -152,6 +189,18 @@ export default {
               initialValue: '',
               value: '',
             },
+            charts: {
+              name: 'Helm Charts',
+              description: 'Choose the Helm charts to deploy to the edge cluster',
+              type: 'multiSelection',
+              options: [],
+              validations: {
+                required: helpers.withMessage('Please choose a chart', required),
+              },
+              disabled: false,
+              initialValue: [],
+              value: [],
+            }
           },
           buttons: [
             {
