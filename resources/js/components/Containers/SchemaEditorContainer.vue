@@ -30,7 +30,7 @@
         </button>
       </div>
       <input class="font-bold text-brand text-lg bg-gray-100 p-2" v-model="name">
-      <List @new="create" @rowSelected="handleRowSelection" :guides="false" :properties="schema.properties"
+      <List @new="create" @rowSelected="handleRowSelection" @rowDeleted="handleRowDeletion" :guides="false" :properties="schema.properties"
             :uuid="null"></List>
       <div class="flex items-center">
         <button @click="copy" class="fpl-button-brand h-10 flex-1 gap-3">
@@ -173,8 +173,11 @@ export default {
 
     handleRowSelection (e) {
       this.selected = e
-      // selectedMetric
-      // selectedFolder
+    },
+
+    handleRowDeletion (e) {
+      let { grandparent, keyInGrandparent } = this.getParentOfObjectContainingUUID(e.uuid, this.schema)
+      this.$delete(grandparent, keyInGrandparent)
     },
 
     getParentOfObjectContainingUUID (uuid, schema) {

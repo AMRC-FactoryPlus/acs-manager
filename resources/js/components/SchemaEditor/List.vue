@@ -33,8 +33,12 @@
              class=" w-12 h-12 flex-shrink-0 flex items-center justify-center bg-gray-200">
           <i class="fa-solid fa-fw text-sm" :class="getMetricData(properties[name]).icon"></i>
         </div>
-        <div class="flex">
+        <div class="flex w-full items-center">
           <div>{{name}}</div>
+          <button @click.stop="maybeDelete(properties[name])"
+                  class="ml-auto flex items-center justify-center w-10 h-10 text-gray-200 hover:text-red-500">
+            <i class="fa-solid fa-trash"></i>
+          </button>
         </div>
       </button>
       <button
@@ -52,16 +56,21 @@
             }}
           </div>
         </div>
+        <button @click.stop="maybeDelete(properties[name])"
+                class="ml-auto flex items-center justify-center w-10 h-10 text-gray-200 hover:text-red-500">
+          <i class="fa-solid fa-trash"></i>
+        </button>
       </button>
       <button
           @click="goto_url_tab(`schema-editor?schema=${properties[name].patternProperties[Object.keys(properties[name].patternProperties)[0]].$ref.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/','')}`)"
           class="flex items-center gap-3 border-2 w-full active:bg-gray-100 hover:bg-gray-50 text-left"
           v-else-if="isSchemaArray(properties[name])">
-        <div v-tooltip="`Array of ${properties[name].patternProperties[Object.keys(properties[name].patternProperties)[0]].$ref}`"
-             class=" w-12 h-12 flex-shrink-0 flex items-center justify-center bg-gray-200">
+        <div
+            v-tooltip="`Array of ${properties[name].patternProperties[Object.keys(properties[name].patternProperties)[0]].$ref}`"
+            class=" w-12 h-12 flex-shrink-0 flex items-center justify-center bg-gray-200">
           <i class="fa-solid fa-fw text-sm fa-cubes"></i>
         </div>
-        <div class="flex">
+        <div class="flex w-full">
           <div class="flex flex-col">
             <div>{{name}}</div>
             <div class="text-xs text-gray-500 truncate">{{
@@ -70,6 +79,10 @@
               }}
             </div>
           </div>
+          <button @click.stop="maybeDelete(properties[name])"
+                  class="ml-auto flex items-center justify-center w-10 h-10 text-gray-200 hover:text-red-500">
+            <i class="fa-solid fa-trash"></i>
+          </button>
         </div>
       </button>
       <div v-else-if="isFolder(properties[name])"
@@ -82,8 +95,13 @@
           <div class="flex">
             <div>{{name}}</div>
           </div>
+          <button @click.stop="maybeDelete(properties[name])"
+                  class="ml-auto flex items-center justify-center w-10 h-10 text-gray-200 hover:text-red-500">
+            <i class="fa-solid fa-trash"></i>
+          </button>
         </button>
-        <List @rowSelected=" (e) => $emit('rowSelected', e)" @new="(e) => $emit('new', e)" class="ml-10"
+        <List @rowSelected=" (e) => $emit('rowSelected', e)" @rowDeleted=" (e) => $emit('rowDeleted', e)"
+              @new="(e) => $emit('new', e)" class="ml-10"
               :properties="properties[name].properties" :uuid="properties[name].uuid"></List>
       </div>
       <div v-else>
@@ -102,6 +120,8 @@
 </template>
 
 <script>
+import { v4 as uuidv4 } from 'uuid'
+
 export default {
   name: 'List',
 
@@ -137,11 +157,11 @@ export default {
   },
 
   computed: {
-    sortedKeys() {
+    sortedKeys () {
       return Object.keys(this.properties).sort((a, b) => {
-        return this.properties[a].index - this.properties[b].index;
-      });
-    }
+        return this.properties[a].index - this.properties[b].index
+      })
+    },
   },
 
   methods: {
@@ -149,6 +169,25 @@ export default {
     clicked (e) {
       this.$emit('rowSelected',
           { type: e.type, payload: { name: e.name, uuid: e.property.uuid, property: e.property } })
+    },
+
+    maybeDelete (e) {
+      window.showNotification({
+        title: 'Are you sure?',
+        description: 'This will delete the selected item and all of its children',
+        type: 'error',
+        persistent: true,
+        buttons: [
+          {
+            text: 'Delete', type: 'error', loadingOnClick: true, action: () => {
+              window.hideNotification({ id: 'e81f631d-e78c-40c1-9536-e5210ca3fbbd' })
+              this.$emit('rowDeleted', { uuid: e.uuid })
+            },
+          },
+          { text: 'Cancel', isClose: true },
+        ],
+        id: 'e81f631d-e78c-40c1-9536-e5210ca3fbbd',
+      })
     },
 
     checkIfObject (input) {
