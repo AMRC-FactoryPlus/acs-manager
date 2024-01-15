@@ -163,6 +163,11 @@ export default {
           this.subSchemaBrowserType = 'sub-schema'
           this.subSchemaParent = e.parent
           this.subSchemaIndex = e.index
+        case 'sub-schema-array':
+          this.subSchemaBrowserVisible = true
+          this.subSchemaBrowserType = 'sub-schema-array'
+          this.subSchemaParent = e.parent
+          this.subSchemaIndex = e.index
       }
     },
 
@@ -251,13 +256,13 @@ export default {
       this.stampMetricsWithUUID(this.schema)
     },
 
-    subSchemaSelected(schema) {
+    subSchemaSelected (schema) {
       this.subSchemaBrowserVisible = false
 
       if (this.subSchemaBrowserType === 'sub-schema') {
         const parent = this.getParentFromUUID(this.subSchemaParent, this.schema)
         const targetPointer = parent?.properties ?? this.schema.properties
-        let uuid = uuidv4();
+        let uuid = uuidv4()
 
         this.$set(targetPointer, uuid, {
           uuid: uuid,
@@ -266,8 +271,25 @@ export default {
         })
       }
 
-      this.subSchemaIndex = null;
-      this.subSchemaParent = null;
+      if (this.subSchemaBrowserType === 'sub-schema-array') {
+        const parent = this.getParentFromUUID(this.subSchemaParent, this.schema)
+        const targetPointer = parent?.properties ?? this.schema.properties
+        let uuid = uuidv4()
+
+        this.$set(targetPointer, uuid, {
+          uuid: uuid,
+          index: this.subSchemaIndex,
+          patternProperties: {
+            '^[a-zA-Z0-9_]*$': {
+              $ref: schema.rawSchema.$id,
+            },
+          },
+          type: 'object',
+        })
+      }
+
+      this.subSchemaIndex = null
+      this.subSchemaParent = null
       this.subSchemaBrowserType = null
     },
 
@@ -300,7 +322,7 @@ export default {
 
     stampMetricsWithUUID (schema) {
       if (schema.hasOwnProperty('properties')) {
-        let index = 0;
+        let index = 0
         for (const key in schema.properties) {
           // Check if we have a `properties` key for nested metrics
           if (schema.properties[key].hasOwnProperty('properties')) {
@@ -309,8 +331,8 @@ export default {
             // Check for 'type' key rather than 'allOf' key with two items
             if (schema.properties[key].hasOwnProperty('allOf') && schema.properties[key].allOf.length === 2) {
               schema.properties[key].uuid = uuidv4()
-              schema.properties[key].index = index;
-              index++;
+              schema.properties[key].index = index
+              index++
             }
           }
         }
@@ -413,7 +435,6 @@ export default {
       subSchemaBrowserType: null,
       subSchemaParent: null,
       subSchemaIndex: null,
-
 
       schema: null,
       name: 'New_Schema-v1',
