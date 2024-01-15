@@ -42,7 +42,7 @@
         </div>
       </button>
       <button
-          @click="goto_url_tab(`schema-editor?schema=${properties[name].$ref.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/','')}`)"
+          @click.stop="clicked({type: 'folder', name: name, property: properties[name]})"
           class="flex items-center gap-3 border-2 w-full active:bg-gray-100 hover:bg-gray-50 text-left"
           v-else-if="isSchema(properties[name])">
         <div v-tooltip="properties[name].$ref"
@@ -62,7 +62,7 @@
         </button>
       </button>
       <button
-          @click="goto_url_tab(`schema-editor?schema=${properties[name].patternProperties[Object.keys(properties[name].patternProperties)[0]].$ref.replace('https://raw.githubusercontent.com/AMRC-FactoryPlus/schemas/main/','')}`)"
+          @click.stop="clicked({type: 'folder', name: name, property: properties[name]})"
           class="flex items-center gap-3 border-2 w-full active:bg-gray-100 hover:bg-gray-50 text-left"
           v-else-if="isSchemaArray(properties[name])">
         <div
@@ -105,7 +105,7 @@
               :properties="properties[name].properties" :uuid="properties[name].uuid"></List>
       </div>
       <div v-else>
-        {{properties[name]}}
+        BAD FORMAT
       </div>
     </div>
     <OverflowMenu class="col-span-5"
