@@ -33,8 +33,10 @@ class CreateNodeAction
         Group $group,
         $nodeName,
         $destinationCluster,
-        $destinationNode
+        $destinationNode,
+        $charts,
     ) {
+
         // =========================
         // Validate User Permissions
         // =========================
@@ -78,10 +80,13 @@ class CreateNodeAction
             "node_id" => $nodeName,
         ]);
 
+        // Split the $charts string (comma-delimited) into an array of UUIDs
+        $charts = explode(',', $charts);
+
         // Create an entry in the Edge Agent Deployment app to trigger the deployment of the edge agent
         $configDB->putConfig(App::EdgeAgentDeployment, $uuid, [
             "name" => sprintf("%s.%s", $group->name, $nodeName),
-            "charts" => ["edge-agent"],
+            "charts" => $charts,
             "cluster" => $destinationCluster,
             "hostname" => $destinationNode,
         ]);
