@@ -10,8 +10,8 @@ use App\Domain\Users\Models\User;
 use App\Exceptions\ActionFailException;
 use App\Exceptions\ActionForbiddenException;
 use Exception;
-use Illuminate\Support\Facades\Log;
 use GSSAPIContext;
+use Illuminate\Support\Facades\Log;
 use KRB5CCache;
 
 class AuthenticateUserAction
@@ -53,7 +53,13 @@ class AuthenticateUserAction
             $clientContext = (new GSSAPIContext);
             $token = null;
             $clientContext->acquireCredentials($ccache);
-            $clientContext->initSecContext(config('manager.manager_service_principal') . '@' . config('manager.realm'), null, 0, null, $token);
+            $clientContext->initSecContext(
+                config('manager.manager_service_principal') . '@' . config('manager.realm'),
+                null,
+                0,
+                null,
+                $token
+            );
 
             //--------|
             // Server |
@@ -72,7 +78,7 @@ class AuthenticateUserAction
         $user = User::whereUsername($username . '@' . config('manager.realm'))->first();
 
         // If the user doesn't exist then create them
-        if (! $user) {
+        if (!$user) {
             $user = User::create(
                 [
                     'username' => $username . '@' . config('manager.realm'),
@@ -83,7 +89,7 @@ class AuthenticateUserAction
         // At this point we have a valid ccache for the user. Store
         // the cache to disk using the user's full principal as the
         // filename, replacing the @ with a - to avoid issues with
-        $ccache->save("FILE:/app/storage/$username-" . config('manager.realm') . ".ccache");
+        $ccache->save("FILE:/app/storage/" . $user->username . '.ccache');
 
         // Log the user in
         return action_success($user);

@@ -19,7 +19,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singletonIf(ServiceClient::class, function (Application $app) {
+        $ccache = new \KRB5CCache;
+
+        $this->app->singletonIf(ServiceClient::class, function (Application $app) use ($ccache) {
+
+            if (auth()->user()) {
+                return (new ServiceClient())
+                    ->setBaseUrl(config('manager.base_url'))
+                    ->setRealm(config('manager.realm'))
+                    ->setLogger($app->make('log'))
+                    ->setScheme(config('manager.scheme'))
+                    ->setCache($app->make('cache.store'))
+                    ->setCcache($ccache->open("FILE:/app/storage/".auth()->user()->username . '.ccache'));
+            }
+
             return (new ServiceClient())
                 ->setBaseUrl(config('manager.base_url'))
                 ->setRealm(config('manager.realm'))
