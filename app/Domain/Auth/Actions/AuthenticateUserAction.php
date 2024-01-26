@@ -11,7 +11,6 @@ use App\Exceptions\ActionFailException;
 use App\Exceptions\ActionForbiddenException;
 use Exception;
 use Illuminate\Support\Facades\Log;
-use KRB5CCache;
 
 class AuthenticateUserAction
 {
@@ -27,7 +26,7 @@ class AuthenticateUserAction
         }
 
         // Get a TGT for the user
-        $ccache = new KRB5CCache;
+        $ccache = new \KRB5CCache;
         $flags = ['tkt_life' => 21600];
 
         // Check if the login was successful
