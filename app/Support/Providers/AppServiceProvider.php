@@ -12,6 +12,7 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\ServiceProvider;
+use KRB5CCache;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $ccache = new \KRB5CCache;
+        $ccache = new KRB5CCache;
 
         $this->app->singletonIf(ServiceClient::class, function (Application $app) use ($ccache) {
 
