@@ -27,7 +27,7 @@ class AuthenticateUserAction
 
         // Get a TGT for the user
         $ccache = new \KRB5CCache;
-        $flags = ['tkt_life' => 21600];
+        $flags = ['tkt_life' => config('manager.tkt_life', 21600)];
 
         // Check if the login was successful
         try {
