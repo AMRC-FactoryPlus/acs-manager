@@ -7,7 +7,10 @@
 namespace App\Support\Providers;
 
 use AMRCFactoryPlus\ServiceClient;
+use App\Exceptions\ReauthenticationRequiredException;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,14 +26,17 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->singletonIf(ServiceClient::class, function (Application $app) use ($ccache) {
 
-            if (auth()->user()) {
-                return (new ServiceClient())
-                    ->setBaseUrl(config('manager.base_url'))
-                    ->setRealm(config('manager.realm'))
-                    ->setLogger($app->make('log'))
-                    ->setScheme(config('manager.scheme'))
-                    ->setCache($app->make('cache.store'))
-                    ->setCcache($ccache->open("FILE:/app/storage/".auth()->user()->username . '.ccache'));
+            // If the user is logged in then get their ccache
+            // and use that for all future requests
+            $ccache->open("FILE:/app/storage/".auth()->user()->username . '.ccache');
+
+            // If the ccache has expired then re-authenticate by ending the session
+            // and showing the login modal
+            try {
+                $ccache->isValid();
+            } catch (\Exception $e) {
+                // Throw a 'ReauthenticationRequiredException' to show the login dialog
+                throw new ReauthenticationRequiredException('TGT has expired.');
             }
 
             return (new ServiceClient())
@@ -39,8 +45,7 @@ class AppServiceProvider extends ServiceProvider
                 ->setLogger($app->make('log'))
                 ->setScheme(config('manager.scheme'))
                 ->setCache($app->make('cache.store'))
-                ->setPrincipal(config('manager.manager_client_principal'))
-                ->setKeytabPath(config('manager.keytab_path'));
+                ->setCcache($ccache);
         });
     }
 

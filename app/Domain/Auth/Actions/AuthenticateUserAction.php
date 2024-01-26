@@ -10,9 +10,7 @@ use App\Domain\Users\Models\User;
 use App\Exceptions\ActionFailException;
 use App\Exceptions\ActionForbiddenException;
 use Exception;
-use GSSAPIContext;
 use Illuminate\Support\Facades\Log;
-use KRB5CCache;
 
 class AuthenticateUserAction
 {
@@ -28,15 +26,13 @@ class AuthenticateUserAction
         }
 
         // Get a TGT for the user
-        $ccache = new KRB5CCache;
-        $flags = ['tkt_lifetime' => 3600];
-
+        $ccache = new \KRB5CCache;
+        $flags = ['tkt_life' => 21600];
 
         // Check if the login was successful
         try {
             $ccache->initPassword($username, $password, $flags);
         } catch (Exception $e) {
-            ray($e->getMessage());
             Log::info('Authentication failed for ' . $username, [
                 'message' => $e->getMessage(),
             ]);
@@ -50,7 +46,7 @@ class AuthenticateUserAction
             //--------|
 
             // Initialise the GSSAPI with the ccache and initialise the context
-            $clientContext = (new GSSAPIContext);
+            $clientContext = (new \GSSAPIContext);
             $token = null;
             $clientContext->acquireCredentials($ccache);
             $clientContext->initSecContext(
@@ -65,7 +61,7 @@ class AuthenticateUserAction
             // Server |
             //--------|
 
-            $serverContext = (new GSSAPIContext);
+            $serverContext = (new \GSSAPIContext);
             $serverContext->registerAcceptorIdentity('/config/keytab/keytab');
             $accepted = $serverContext->acceptSecContext($token);
 
