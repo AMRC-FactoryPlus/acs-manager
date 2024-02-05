@@ -82,7 +82,7 @@ export default {
               title: edgeCluster,
               value: edgeCluster,
               options: config.status.hosts.map(host => {
-                const fb = host.fieldbus ? ` [${host.fieldbus}]` : "";
+                const special = host.specialised ? ` [${host.specialised}]` : "";
                 return {
                   title: `${host.hostname}${fb}`,
                   value: host.hostname,
