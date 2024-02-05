@@ -84,7 +84,7 @@ export default {
               options: config.status.hosts.map(host => {
                 const special = host.specialised ? ` [${host.specialised}]` : "";
                 return {
-                  title: `${host.hostname}${fb}`,
+                  title: `${host.hostname}${special}`,
                   value: host.hostname,
                   action: () => {
                     params.destination_cluster.data = config.uuid;
