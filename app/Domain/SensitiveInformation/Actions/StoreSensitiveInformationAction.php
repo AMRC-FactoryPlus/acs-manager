@@ -18,7 +18,7 @@ class StoreSensitiveInformationAction
      * The safe identifier is then returned to the caller to use.
      **/
 
-    public function execute(string $cluster, string $namespace, string $value)
+    public function execute(string $cluster, string $node, string $namespace, string $value)
     {
         $fplus = resolve(ServiceClient::class);
         $clusterManager = $fplus->getClusterManager();
@@ -31,7 +31,7 @@ class StoreSensitiveInformationAction
         $clusterManager->putSecret(
             cluster: $cluster,
             namespace: $namespace,
-            name: 'edge-agent-sensitive-information',
+            name: 'edge-agent-sensitive-information-'. $node ,
             key: $identifier,
             payload: $value
         );

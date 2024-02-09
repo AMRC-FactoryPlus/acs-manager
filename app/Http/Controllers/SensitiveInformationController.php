@@ -31,6 +31,7 @@ class SensitiveInformationController extends Controller
 
         return (new StoreSensitiveInformationAction())->execute(
             cluster: $device->node->cluster,
+            node: $device->node->uuid,
             namespace: $clusterConfiguration['namespace'],
             value: $validated['value']
         );
