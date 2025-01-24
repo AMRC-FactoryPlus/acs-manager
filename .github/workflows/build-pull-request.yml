@@ -95,7 +95,7 @@ jobs:
           outputs: type=docker,dest=/tmp/image.tar
 
       - name: Upload Backend
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.number }}
           path: /tmp/image.tar
@@ -139,7 +139,7 @@ jobs:
           images: ghcr.io/amrc-factoryplus/acs-manager
 
       - name: Download artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: ${{ github.event.number }}
           path: /tmp
