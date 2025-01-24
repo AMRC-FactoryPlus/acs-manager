@@ -64,6 +64,12 @@
             <a href="#" class="text-gray-500 font-semibold hover:text-gray-700 mb-1">{{item.node_id}}</a>
             <div class="flex items-center justify-center gap-0">
               <button v-if="$root.$data.user.administrator" type="button"
+                  @mouseup="downloadNodeConfig(item)"
+                  v-tooltip="'Download Node Configuration'"
+                  class="fpl-button-info w-6 !h-6">
+                <i class="fa-sharp fa-solid fa-download text-xs"></i>
+              </button>
+              <button v-if="$root.$data.user.administrator" type="button"
                       @mouseup="showNodeUserDialog(item)"
                       v-tooltip="'Manage User Access'"
                       class="fpl-button-info w-6 !h-6">
@@ -210,6 +216,39 @@ export default {
         }
         this.handleError(error)
       })
+    },
+
+    downloadNodeConfig(node) {
+      axios.post('/api/download-edge-agent-config', {
+        node_id: node.uuid,
+        config_password: 'not_required_as_admin'
+      }, {
+        responseType: 'blob' // Expect a binary file response
+      }).then(response => {
+        // Create a Blob object from the response data
+        const blob = new Blob([response.data]);
+
+        // Create a link element to download the file
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+
+        // Get the filename from the server's response headers if available
+        const contentDisposition = response.headers['content-disposition'];
+        const fileName = contentDisposition
+          ? contentDisposition.split('filename=')[1]?.replace(/['"]/g, '')
+          : 'edge-agent-config.json';
+
+        link.setAttribute('download', fileName); // Set the file name
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }).catch(error => {
+        if (error.response && error.response.status === 401) {
+          this.goto_url('/login');
+        } else {
+          this.handleError(error);
+        }
+      });
     },
 
     maybeDeleteNode(group, node) {
