@@ -62,9 +62,7 @@ class EdgeAgentConfigurationController extends Controller
             );
         }
 
-        return response()->download(
-            Storage::disk('edge-agent-configs')->path($node->activeEdgeNodeConfiguration->file), 'edge-agent-config.json'
-        );
+        return action_success(Storage::disk('edge-agent-configs')->get($node->activeEdgeNodeConfiguration->file));
     }
 
 }

@@ -222,26 +222,23 @@ export default {
       axios.post('/api/download-edge-agent-config', {
         node_id: node.uuid,
         config_password: 'not_required_as_admin'
-      }, {
-        responseType: 'blob' // Expect a binary file response
       }).then(response => {
-        // Create a Blob object from the response data
-        const blob = new Blob([response.data]);
+        // Get the file content from the response
+        const fileContent = response.data.data;
 
-        // Create a link element to download the file
+        // Create a Blob from the content
+        const blob = new Blob([fileContent], { type: 'application/json' });
+
+        // Generate a URL for the Blob
+        const downloadUrl = window.URL.createObjectURL(blob);
+
+        // Create an anchor element to trigger the download
         const link = document.createElement('a');
-        link.href = window.URL.createObjectURL(blob);
-
-        // Get the filename from the server's response headers if available
-        const contentDisposition = response.headers['content-disposition'];
-        const fileName = contentDisposition
-          ? contentDisposition.split('filename=')[1]?.replace(/['"]/g, '')
-          : 'edge-agent-config.json';
-
-        link.setAttribute('download', fileName); // Set the file name
+        link.href = downloadUrl;
+        link.setAttribute('download', 'edge-agent-config.json'); // Set the desired filename
         document.body.appendChild(link);
         link.click();
-        link.remove();
+        link.remove(); // Clean up the DOM
       }).catch(error => {
         if (error.response && error.response.status === 401) {
           this.goto_url('/login');
