@@ -219,6 +219,9 @@ export default {
     },
 
     downloadNodeConfig(node) {
+
+      const fileName = `FactoryPlus_${node.group.name}_${node.node_id}`
+
       axios.post('/api/download-edge-agent-config', {
         node_id: node.uuid,
         config_password: 'not_required_as_admin'
@@ -235,7 +238,7 @@ export default {
         // Create an anchor element to trigger the download
         const link = document.createElement('a');
         link.href = downloadUrl;
-        link.setAttribute('download', 'edge-agent-config.json'); // Set the desired filename
+        link.setAttribute('download', `${fileName}.json`); // Set the desired filename
         document.body.appendChild(link);
         link.click();
         link.remove(); // Clean up the DOM

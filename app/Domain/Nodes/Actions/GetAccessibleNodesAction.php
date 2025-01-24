@@ -35,6 +35,8 @@ class GetAccessibleNodesAction
             $query
                 // Only return nodes for the selected group
                 ->whereGroupId($group->id)
+                // Eager load the group relationship
+                ->with(['group'])
                 // Don't return nodes without a node_id (MQTT bridges)
                 ->whereNotNull('nodes.node_id')
                 // If we have a search term then apply then filter only the models that were returned from the search
