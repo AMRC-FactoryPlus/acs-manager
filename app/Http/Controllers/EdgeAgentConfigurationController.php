@@ -51,10 +51,10 @@ class EdgeAgentConfigurationController extends Controller
             );
         }
 
-        // Allow admins to get the config with any password
-        if (!auth()->user() || !auth()->user()->administrator) {
-            (new AuthenticateKerberosPrincipalAction)->execute($node->principal, $validated['config_password']);
-        }
+        // // Allow admins to get the config with any password
+        // if (!auth()->user() || !auth()->user()->administrator) {
+        //     (new AuthenticateKerberosPrincipalAction)->execute($node->principal, $validated['config_password']);
+        // }
 
         if ($node->activeEdgeNodeConfiguration === null) {
             throw new ActionFailException(
