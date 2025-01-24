@@ -97,6 +97,7 @@ Route::middleware('auth:api')->get('/device-schemas/{schema}/versions', [DeviceS
 
 // ------ Edge Agent Config ------ //
 Route::post('edge-agent-config', [EdgeAgentConfigurationController::class, 'show']);
+Route::post('download-edge-agent-config', [EdgeAgentConfigurationController::class, 'download']);
 
 // ------ Edge Agents ------ //
 Route::middleware('auth:api')->get('/edge-agents', [EdgeAgentController::class, 'index']);

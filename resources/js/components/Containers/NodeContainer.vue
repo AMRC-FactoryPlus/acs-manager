@@ -64,6 +64,12 @@
             <a href="#" class="text-gray-500 font-semibold hover:text-gray-700 mb-1">{{item.node_id}}</a>
             <div class="flex items-center justify-center gap-0">
               <button v-if="$root.$data.user.administrator" type="button"
+                  @mouseup="downloadNodeConfig(item)"
+                  v-tooltip="'Download Node Configuration'"
+                  class="fpl-button-info w-6 !h-6">
+                <i class="fa-sharp fa-solid fa-download text-xs"></i>
+              </button>
+              <button v-if="$root.$data.user.administrator" type="button"
                       @mouseup="showNodeUserDialog(item)"
                       v-tooltip="'Manage User Access'"
                       class="fpl-button-info w-6 !h-6">
@@ -210,6 +216,39 @@ export default {
         }
         this.handleError(error)
       })
+    },
+
+    downloadNodeConfig(node) {
+
+      const fileName = `FactoryPlus_${node.group.name}_${node.node_id}`
+
+      axios.post('/api/download-edge-agent-config', {
+        node_id: node.uuid,
+        config_password: 'not_required_as_admin'
+      }).then(response => {
+        // Get the file content from the response
+        const fileContent = response.data.data;
+
+        // Create a Blob from the content
+        const blob = new Blob([fileContent], { type: 'application/json' });
+
+        // Generate a URL for the Blob
+        const downloadUrl = window.URL.createObjectURL(blob);
+
+        // Create an anchor element to trigger the download
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.setAttribute('download', `${fileName}.json`); // Set the desired filename
+        document.body.appendChild(link);
+        link.click();
+        link.remove(); // Clean up the DOM
+      }).catch(error => {
+        if (error.response && error.response.status === 401) {
+          this.goto_url('/login');
+        } else {
+          this.handleError(error);
+        }
+      });
     },
 
     maybeDeleteNode(group, node) {
